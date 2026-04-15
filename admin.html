@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yonetici Paneli — Kartpostal Koleksiyonu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <h1 class="site-title">Yonetici Paneli</h1>
+                <p class="site-subtitle">Kartpostal Koleksiyonu</p>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="back-to-site">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"/>
+                        <polyline points="12 19 5 12 12 5"/>
+                    </svg>
+                    Siteye Don
+                </a>
+                <button id="logout-btn" class="logout-btn" style="display:none;">
+                    Cikis Yap
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <!-- Giriş Formu -->
+        <div id="login-section" class="login-section">
+            <div class="login-card">
+                <div class="login-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <path d="M12 15v2"/>
+                        <rect x="5" y="10" width="14" height="10" rx="2"/>
+                        <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
+                    </svg>
+                </div>
+                <h2 class="login-title">Yonetici Girisi</h2>
+                <form id="login-form" class="login-form">
+                    <div class="form-field">
+                        <label for="login-username">Kullanici Adi</label>
+                        <input type="text" id="login-username" required autocomplete="username">
+                    </div>
+                    <div class="form-field">
+                        <label for="login-password">Sifre</label>
+                        <input type="password" id="login-password" required autocomplete="current-password">
+                    </div>
+                    <p id="login-error" class="login-error" style="display:none;">Kullanici adi veya sifre hatali.</p>
+                    <button type="submit" class="btn btn-primary">Giris Yap</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Paneli (giriş sonrası) -->
+        <div id="admin-panel" class="admin-panel" style="display:none;">
+            <!-- Ekleme/Düzenleme Formu -->
+            <section class="admin-section">
+                <h2 class="section-title" id="form-title">Yeni Kartpostal Ekle</h2>
+                <form id="postcard-form" class="postcard-form">
+                    <input type="hidden" id="edit-id" value="">
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="form-city">Sehir *</label>
+                            <input type="text" id="form-city" required placeholder="ornegin: Paris">
+                        </div>
+                        <div class="form-field">
+                            <label for="form-country">Ulke *</label>
+                            <input type="text" id="form-country" required placeholder="ornegin: Fransa">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="form-date">Tarih *</label>
+                        <input type="date" id="form-date" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="form-description">Aciklama</label>
+                        <textarea id="form-description" rows="3" placeholder="Kartpostal hakkinda kisa bir aciklama..."></textarea>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Gorsel *</label>
+                        <div class="image-upload-area" id="image-upload-area">
+                            <input type="file" id="form-image" accept="image/*" class="file-input">
+                            <div class="upload-placeholder" id="upload-placeholder">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <path d="M21 15l-5-5L5 21"/>
+                                </svg>
+                                <p>Gorsel secin veya surukleyin</p>
+                                <span>JPG, PNG, WebP</span>
+                            </div>
+                            <img id="image-preview" class="image-preview" style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Konum (Haritadan secin veya koordinatlari girin) *</label>
+                        <div id="admin-map" class="admin-map"></div>
+                        <div class="form-row coord-row">
+                            <div class="form-field">
+                                <label for="form-lat">Enlem</label>
+                                <input type="number" id="form-lat" step="any" required placeholder="48.8566">
+                            </div>
+                            <div class="form-field">
+                                <label for="form-lng">Boylam</label>
+                                <input type="number" id="form-lng" step="any" required placeholder="2.3522">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="form-submit-btn">Kartpostal Ekle</button>
+                        <button type="button" class="btn btn-secondary" id="form-cancel-btn" style="display:none;">Iptal</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Mevcut Kartpostallar Tablosu -->
+            <section class="admin-section">
+                <h2 class="section-title">Mevcut Kartpostallar</h2>
+                <div class="table-wrapper">
+                    <table class="admin-table" id="postcards-table">
+                        <thead>
+                            <tr>
+                                <th>Gorsel</th>
+                                <th>Sehir</th>
+                                <th>Ulke</th>
+                                <th>Tarih</th>
+                                <th>Islemler</th>
+                            </tr>
+                        </thead>
+                        <tbody id="postcards-tbody"></tbody>
+                    </table>
+                    <p id="table-empty" class="table-empty" style="display:none;">Henuz kartpostal eklenmemis.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>&copy; 2026 Kartpostal Koleksiyonu &mdash; Yonetici Paneli</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartpostal Koleksiyonu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery.css">
+    <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <h1 class="site-title">Kartpostal Koleksiyonu</h1>
+                <p class="site-subtitle">Dunyadan Mektuplar</p>
+            </div>
+            <nav class="main-nav">
+                <div class="mode-switcher">
+                    <button class="mode-btn active" data-mode="gallery">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                        <span>Galeri</span>
+                    </button>
+                    <button class="mode-btn" data-mode="map">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/>
+                            <path d="M8 2v16"/>
+                            <path d="M16 6v16"/>
+                        </svg>
+                        <span>Harita</span>
+                    </button>
+                </div>
+                <a href="admin.html" class="admin-link" title="Yonetici Paneli">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 15v2"/>
+                        <rect x="5" y="10" width="14" height="10" rx="2"/>
+                        <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="filter-bar" id="filter-bar">
+        <div class="filter-inner">
+            <div class="filter-group">
+                <label for="filter-country">Ulke</label>
+                <select id="filter-country">
+                    <option value="">Tumu</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filter-city">Sehir</label>
+                <select id="filter-city">
+                    <option value="">Tumu</option>
+                </select>
+            </div>
+            <div class="filter-group search-group">
+                <label for="filter-search">Ara</label>
+                <input type="text" id="filter-search" placeholder="Sehir, ulke veya aciklama...">
+            </div>
+            <div class="filter-group">
+                <label for="filter-sort">Sirala</label>
+                <select id="filter-sort">
+                    <option value="date-desc">Yeni &rarr; Eski</option>
+                    <option value="date-asc">Eski &rarr; Yeni</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <div id="gallery-container" class="gallery-container"></div>
+        <div id="map-container" class="map-container" style="display:none;">
+            <div id="map" class="map"></div>
+        </div>
+        <div id="empty-state" class="empty-state" style="display:none;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <path d="M2 8h20"/>
+                <circle cx="8" cy="14" r="2"/>
+                <path d="M14 20l3-4 5 4"/>
+            </svg>
+            <p class="empty-title">Henuz kartpostal eklenmemis</p>
+            <p class="empty-desc">Yonetici panelinden ilk kartpostalinizi ekleyin.</p>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close" title="Kapat">&times;</button>
+            <button class="modal-nav modal-prev" id="modal-prev" title="Onceki">&#8249;</button>
+            <button class="modal-nav modal-next" id="modal-next" title="Sonraki">&#8250;</button>
+            <div class="modal-body">
+                <div class="modal-image-wrapper">
+                    <img id="modal-image" src="" alt="Kartpostal">
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-city" class="modal-city"></h2>
+                    <p id="modal-country" class="modal-country"></p>
+                    <p id="modal-date" class="modal-date"></p>
+                    <p id="modal-description" class="modal-description"></p>
+                    <a id="modal-open-page" href="#" target="_blank" class="modal-open-btn">
+                        Yeni sekmede ac
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                            <polyline points="15 3 21 3 21 9"/>
+                            <line x1="10" y1="14" x2="21" y2="3"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>&copy; 2026 Kartpostal Koleksiyonu &mdash; Dunya'nin dort bir yanindan mektuplar.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/modal.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
