@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Test</title></head>
+<body>
+<h2>LocalStorage Temizle ve Test Et</h2>
+<button id="clearBtn" style="padding:10px 20px;font-size:16px;cursor:pointer;">LocalStorage Temizle</button>
+<pre id="output" style="background:#f0f0f0;padding:15px;margin-top:10px;"></pre>
+<script>
+var out = document.getElementById('output');
+function log(msg) { out.textContent += msg + '\n'; }
+
+// Mevcut localStorage durumu
+log('=== localStorage durumu ===');
+for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    var val = localStorage.getItem(key);
+    log(key + ': ' + val.length + ' karakter');
+}
+log('Toplam key sayisi: ' + localStorage.length);
+log('');
+
+// data.js yükleme testi
+log('=== data.js yükleme testi ===');
+var script = document.createElement('script');
+script.src = 'js/data.js';
+script.onload = function() {
+    log('data.js YUKLENDI');
+    try {
+        var postcards = PostcardData.getAll();
+        log('Kartpostal sayisi: ' + postcards.length);
+        if (postcards.length > 0) {
+            log('Ilk kartpostal: ' + postcards[0].city + ', ' + postcards[0].country);
+            var img = PostcardData.getImage(postcards[0]);
+            log('getImage sonucu: ' + img.substring(0, 80) + '...');
+        }
+    } catch(e) {
+        log('HATA: ' + e.message);
+    }
+};
+script.onerror = function() {
+    log('data.js YUKLENEMEDI!');
+};
+document.body.appendChild(script);
+
+document.getElementById('clearBtn').addEventListener('click', function() {
+    localStorage.clear();
+    log('\n=== localStorage TEMIZLENDI ===');
+    log('Sayfayi yenileyin ve sonra index.html acin.');
+});
+</script>
+</body>
+</html>

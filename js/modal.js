@@ -16,6 +16,7 @@ const Modal = (function () {
     const countryEl = document.getElementById('modal-country');
     const originalTextEl = document.getElementById('modal-original-text');
     const descEl = document.getElementById('modal-description');
+    const desc2El = document.getElementById('modal-description-2');
     const translationNoteEl = document.getElementById('modal-translation-note');
     const openPageEl = document.getElementById('modal-open-page');
 
@@ -121,6 +122,14 @@ const Modal = (function () {
 
         const desc = I18n.getDescription(postcard);
         descEl.textContent = desc.text;
+        descEl.style.display = desc.text ? '' : 'none';
+
+        if (desc.text2) {
+            desc2El.textContent = desc.text2;
+            desc2El.style.display = '';
+        } else {
+            desc2El.style.display = 'none';
+        }
 
         if (desc.note) {
             translationNoteEl.textContent = desc.note;

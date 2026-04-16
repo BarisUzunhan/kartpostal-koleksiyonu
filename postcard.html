@@ -38,65 +38,23 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Çift görsel carousel */
-        .detail-carousel {
-            position: relative;
+        /* Görseller alt alta */
+        .detail-images {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             width: 100%;
             background: var(--color-bg-alt);
-            min-height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0;
         }
 
-        .detail-carousel img {
+        .detail-images .detail-image {
             width: 100%;
             height: auto;
             max-height: 65vh;
             object-fit: contain;
-            display: none;
+            display: block;
         }
-
-        .detail-carousel img.active-slide { display: block; }
-
-        .detail-carousel .img-nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.85);
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 1.2rem;
-            color: var(--color-text);
-            cursor: pointer;
-            z-index: 5;
-        }
-
-        .detail-carousel .img-nav-prev { left: 12px; }
-        .detail-carousel .img-nav-next { right: 12px; }
-
-        .detail-carousel .img-dots {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 6px;
-            z-index: 5;
-        }
-
-        .detail-carousel .img-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.5);
-            border: none;
-            cursor: pointer;
-        }
-
-        .detail-carousel .img-dot.active { background: #fff; }
 
         .detail-info {
             padding: 1.5rem 2rem 2rem;
@@ -153,9 +111,44 @@
 
         .detail-map {
             width: 100%;
-            height: 220px;
+            height: 280px;
             border-radius: var(--radius-md);
             border: 1px solid var(--color-border);
+            transition: height 0.3s ease;
+        }
+
+        .detail-map.expanded {
+            height: 500px;
+        }
+
+        .detail-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .map-toggle-btn {
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background: var(--color-surface);
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .map-toggle-btn:hover {
+            background: var(--color-border-light);
+            color: var(--color-text);
+        }
+
+        .detail-description-secondary {
+            color: var(--color-text-muted);
+            font-size: 0.88rem;
+            margin-bottom: 0.5rem;
         }
 
         /* Benzer kartpostallar */

@@ -25,18 +25,13 @@
 
     let html = `<div class="detail-card fade-in">`;
 
-    // Carousel
-    html += `<div class="detail-carousel" id="detail-carousel">`;
-    html += `<img class="active-slide" src="${escapeHtml(frontSrc)}" alt="${escapeHtml(postcard.city)}"
-                  onerror="this.parentElement.innerHTML='<p style=\\"padding:3rem;color:var(--color-text-muted)\\">Gorsel yuklenemedi</p>'">`;
+    // Görseller alt alta
+    html += `<div class="detail-images">`;
+    html += `<img class="detail-image" src="${escapeHtml(frontSrc)}" alt="${escapeHtml(postcard.city)}"
+                  onerror="this.style.display='none'">`;
     if (hasBack) {
-        html += `<img src="${escapeHtml(backSrc)}" alt="${escapeHtml(postcard.city)} - arka yuz">`;
-        html += `<button class="img-nav-btn img-nav-prev" onclick="DetailPage.showSlide(0)">&#8249;</button>`;
-        html += `<button class="img-nav-btn img-nav-next" onclick="DetailPage.showSlide(1)">&#8250;</button>`;
-        html += `<div class="img-dots">
-                    <button class="img-dot active" onclick="DetailPage.showSlide(0)"></button>
-                    <button class="img-dot" onclick="DetailPage.showSlide(1)"></button>
-                 </div>`;
+        html += `<img class="detail-image" src="${escapeHtml(backSrc)}" alt="${escapeHtml(postcard.city)} - arka yuz"
+                      onerror="this.style.display='none'">`;
     }
     html += `</div>`;
 
@@ -49,15 +44,22 @@
         html += `<div class="detail-original-text">${escapeHtml(postcard.originalText)}</div>`;
     }
 
-    html += `<p class="detail-description">${escapeHtml(desc.text)}</p>`;
-
+    if (desc.text) {
+        html += `<p class="detail-description">${escapeHtml(desc.text)}</p>`;
+    }
+    if (desc.text2) {
+        html += `<p class="detail-description detail-description-secondary">${escapeHtml(desc.text2)}</p>`;
+    }
     if (desc.note) {
         html += `<p class="detail-translation-note">${escapeHtml(desc.note)}</p>`;
     }
 
     // Mini harita
-    html += `<h3 class="detail-section-title">${I18n.t('location')}</h3>`;
-    html += `<div class="detail-map" id="detail-map"></div>`;
+    html += `<div class="detail-section-header">
+                <h3 class="detail-section-title" style="margin-bottom:0;border:none;padding:0;">${I18n.t('location')}</h3>
+                <button class="map-toggle-btn" id="map-toggle-btn" onclick="DetailPage.toggleMap()">&#x26F6; Genislet</button>
+             </div>`;
+    html += `<div class="detail-map" id="detail-map" style="margin-top:0.75rem;"></div>`;
 
     // Benzer kartpostallar
     if (similar.length > 0) {
@@ -80,13 +82,18 @@
     container.innerHTML = html;
 
     // Mini haritayı oluştur
+    let detailMap = null;
     if (postcard.lat && postcard.lng) {
-        const miniMap = L.map('detail-map', { zoomControl: false, scrollWheelZoom: false, dragging: false }).setView([postcard.lat, postcard.lng], 8);
+        detailMap = L.map('detail-map', {
+            zoomControl: true,
+            scrollWheelZoom: true,
+            dragging: true
+        }).setView([postcard.lat, postcard.lng], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap',
             maxZoom: 18
-        }).addTo(miniMap);
-        L.marker([postcard.lat, postcard.lng]).addTo(miniMap);
+        }).addTo(detailMap);
+        L.marker([postcard.lat, postcard.lng]).addTo(detailMap);
     }
 
     function showNotFound() {
@@ -106,15 +113,17 @@
         return div.innerHTML;
     }
 
-    // Carousel slide kontrolü (global erişim için)
+    // Harita toggle (global erişim için)
     window.DetailPage = {
-        showSlide: function(index) {
-            const carousel = document.getElementById('detail-carousel');
-            if (!carousel) return;
-            const imgs = carousel.querySelectorAll('img');
-            const dots = carousel.querySelectorAll('.img-dot');
-            imgs.forEach((img, i) => img.classList.toggle('active-slide', i === index));
-            dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
+        toggleMap: function() {
+            const mapEl = document.getElementById('detail-map');
+            const btn = document.getElementById('map-toggle-btn');
+            if (!mapEl) return;
+            const isExpanded = mapEl.classList.toggle('expanded');
+            btn.textContent = isExpanded ? '\u26F6 Kucult' : '\u26F6 Genislet';
+            if (detailMap) {
+                setTimeout(function() { detailMap.invalidateSize(); }, 350);
+            }
         }
     };
 })();

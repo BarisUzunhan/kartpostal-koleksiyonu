@@ -163,15 +163,11 @@ const I18n = (function () {
     }
 
     function getDescription(postcard) {
-        if (currentLang === 'tr') {
-            return { text: postcard.description || '', note: '' };
-        }
-        if (currentLang === 'en') {
-            return { text: postcard.description_en || postcard.description || '', note: '' };
-        }
-        // zh — İngilizce açıklamayı göster + çeviri notu
-        const text = postcard.description_en || postcard.description || '';
-        return { text: text, note: t('translationNote') };
+        return {
+            text: postcard.description || '',
+            text2: postcard.description_en || '',
+            note: currentLang === 'zh' ? t('translationNote') : ''
+        };
     }
 
     function init() {

@@ -325,7 +325,7 @@ body {
 }
 
 .modal-card-nav {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
     background: var(--color-surface);
@@ -340,7 +340,7 @@ body {
     align-items: center;
     justify-content: center;
     transition: all var(--transition);
-    z-index: 10;
+    z-index: 1010;
     line-height: 1;
 }
 
@@ -351,11 +351,16 @@ body {
 }
 
 .modal-card-prev {
-    left: -56px;
+    left: calc(50% - 484px);
 }
 
 .modal-card-next {
-    right: -56px;
+    right: calc(50% - 484px);
+}
+
+.modal-description-secondary {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
 }
 
 .modal-body {
@@ -641,11 +646,11 @@ body {
     }
 
     .modal-card-prev {
-        left: 8px;
+        left: 6px;
     }
 
     .modal-card-next {
-        right: 8px;
+        right: 6px;
     }
 
     .modal-card-nav {
@@ -653,6 +658,7 @@ body {
         height: 36px;
         font-size: 1.5rem;
         background: rgba(255, 255, 255, 0.9);
+        top: 35%;
     }
 
     .modal-info {
