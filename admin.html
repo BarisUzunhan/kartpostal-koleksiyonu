@@ -3,32 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yonetici Paneli — Kartpostal Koleksiyonu</title>
+    <title>Yonetici Paneli — Baska Topraklarin Renkleri</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <header class="site-header">
+        <div class="header-top">
+            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+        </div>
         <div class="header-inner">
-            <div class="logo">
-                <h1 class="site-title">Yonetici Paneli</h1>
-                <p class="site-subtitle">Kartpostal Koleksiyonu</p>
-            </div>
             <nav class="main-nav">
-                <a href="index.html" class="back-to-site">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5"/>
-                        <polyline points="12 19 5 12 12 5"/>
-                    </svg>
-                    Siteye Don
-                </a>
-                <button id="logout-btn" class="logout-btn" style="display:none;">
-                    Cikis Yap
-                </button>
+                <span style="font-weight:600;color:var(--color-text);">Yonetici Paneli</span>
+                <span class="nav-separator">|</span>
+                <a href="index.html" class="nav-link">Siteye Don</a>
+                <button id="logout-btn" class="logout-btn" style="display:none;">Cikis Yap</button>
             </nav>
         </div>
     </header>
@@ -60,9 +53,8 @@
             </div>
         </div>
 
-        <!-- Admin Paneli (giriş sonrası) -->
+        <!-- Admin Paneli -->
         <div id="admin-panel" class="admin-panel" style="display:none;">
-            <!-- Ekleme/Düzenleme Formu -->
             <section class="admin-section">
                 <h2 class="section-title" id="form-title">Yeni Kartpostal Ekle</h2>
                 <form id="postcard-form" class="postcard-form">
@@ -85,24 +77,49 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="form-description">Aciklama</label>
-                        <textarea id="form-description" rows="3" placeholder="Kartpostal hakkinda kisa bir aciklama..."></textarea>
+                        <label for="form-description">Turkce Aciklama</label>
+                        <textarea id="form-description" rows="3" placeholder="Kartpostal hakkinda Turkce aciklama..."></textarea>
                     </div>
 
                     <div class="form-field">
-                        <label>Gorsel *</label>
-                        <div class="image-upload-area" id="image-upload-area">
-                            <input type="file" id="form-image" accept="image/*" class="file-input">
-                            <div class="upload-placeholder" id="upload-placeholder">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                                    <path d="M21 15l-5-5L5 21"/>
-                                </svg>
-                                <p>Gorsel secin veya surukleyin</p>
-                                <span>JPG, PNG, WebP</span>
+                        <label for="form-description-en">Ingilizce Aciklama (English Description)</label>
+                        <textarea id="form-description-en" rows="3" placeholder="English description of the postcard..."></textarea>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="form-original-text">Orijinal Metin (kartpostalin uzerindeki yabanci dildeki yazi)</label>
+                        <textarea id="form-original-text" rows="2" placeholder="ornegin: Saluti da Roma..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>On Yuz Gorseli *</label>
+                            <div class="image-upload-area" id="image-upload-front">
+                                <input type="file" id="form-image-front" accept="image/*" class="file-input">
+                                <div class="upload-placeholder" id="upload-placeholder-front">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                                        <path d="M21 15l-5-5L5 21"/>
+                                    </svg>
+                                    <p>On yuz gorseli secin</p>
+                                </div>
+                                <img id="image-preview-front" class="image-preview" style="display:none;">
                             </div>
-                            <img id="image-preview" class="image-preview" style="display:none;">
+                        </div>
+                        <div class="form-field">
+                            <label>Arka Yuz Gorseli</label>
+                            <div class="image-upload-area" id="image-upload-back">
+                                <input type="file" id="form-image-back" accept="image/*" class="file-input">
+                                <div class="upload-placeholder" id="upload-placeholder-back">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <path d="M12 8v8M8 12h8"/>
+                                    </svg>
+                                    <p>Arka yuz gorseli (opsiyonel)</p>
+                                </div>
+                                <img id="image-preview-back" class="image-preview" style="display:none;">
+                            </div>
                         </div>
                     </div>
 
@@ -128,7 +145,6 @@
                 </form>
             </section>
 
-            <!-- Mevcut Kartpostallar Tablosu -->
             <section class="admin-section">
                 <h2 class="section-title">Mevcut Kartpostallar</h2>
                 <div class="table-wrapper">
@@ -152,7 +168,7 @@
 
     <footer class="site-footer">
         <div class="footer-inner">
-            <p>&copy; 2026 Kartpostal Koleksiyonu &mdash; Yonetici Paneli</p>
+            <p>&copy; 2026 Baska Topraklarin Renkleri — Yonetici Paneli</p>
         </div>
     </footer>
 

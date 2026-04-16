@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ne Yapmaliyim? — Baska Topraklarin Renkleri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-content {
+            max-width: 700px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .content-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        .content-card h2 {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 1.25rem;
+        }
+        .content-card p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            color: var(--color-text);
+        }
+        .content-card .step {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .step-number {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .step-text { flex: 1; }
+        .step-text p { margin-bottom: 0.25rem; }
+        .address-box {
+            background: var(--color-border-light);
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            text-align: center;
+            margin-top: 1.5rem;
+            border: 2px dashed var(--color-border);
+        }
+        .address-box .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .address-box .address {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+        @media (max-width: 768px) {
+            .content-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-top">
+            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+            <img src="images/headerorta.png" alt="" class="header-plane-img">
+        </div>
+        <div class="header-inner">
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link" data-i18n="navHome">Ana Sayfa</a>
+                <span class="nav-separator">|</span>
+                <a href="index.html?mode=map" class="nav-link" data-i18n="navMap">Harita</a>
+                <span class="nav-separator">|</span>
+                <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
+                <span class="nav-separator">|</span>
+                <a href="what-to-do.html" class="nav-link active" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="tr">TR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="zh">中文</button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <div class="content-card fade-in">
+            <h2 data-i18n="whatToDoTitle">Ne Yapmaliyim?</h2>
+
+            <p>Bulundugunuz sehirden bana bir kartpostal gondermek ister misiniz? Cok basit!</p>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-text">
+                    <p><strong>Bir kartpostal satin alin</strong></p>
+                    <p>Bulundugunuz sehirden guzel bir kartpostal secin.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-text">
+                    <p><strong>Arkasina bir seyler yazin</strong></p>
+                    <p>Selamlarinizi, o sehirle ilgili bir anektotunuzu veya herhangi bir mesajinizi yazin.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-text">
+                    <p><strong>Asagidaki adrese gonderin</strong></p>
+                    <p>Pul yapistirin ve postaya verin. Bu kadar!</p>
+                </div>
+            </div>
+
+            <div class="address-box">
+                <p class="label">Posta Adresi / Mailing Address</p>
+                <p class="address">
+                    Toprak Uzunhan<br>
+                    P.K. 12 Besiktas<br>
+                    Istanbul / Turkey
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p data-i18n="footerText">&copy; 2026 Baska Topraklarin Renkleri</p>
+        </div>
+    </footer>
+
+    <script src="js/i18n.js"></script>
+    <script>I18n.init();</script>
+</body>
+</html>

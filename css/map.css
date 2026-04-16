@@ -1,26 +1,25 @@
 /* ========================================
-   Harita Modu Stilleri
+   Harita Modu Stilleri — Teal Tema
    ======================================== */
 
 .map-container {
     width: 100%;
     border-radius: var(--radius-md);
     overflow: hidden;
-    border: 1px solid var(--color-border-light);
+    border: 1px solid var(--color-border);
     background: var(--color-bg-alt);
 }
 
 .map {
     width: 100%;
-    height: calc(100vh - 220px);
+    height: calc(100vh - 200px);
     min-height: 400px;
 }
 
-/* Leaflet popup özelleştirme */
 .leaflet-popup-content-wrapper {
     border-radius: var(--radius-md) !important;
     box-shadow: var(--shadow-md) !important;
-    border: 1px solid var(--color-border-light);
+    border: 1px solid var(--color-border);
     padding: 0 !important;
 }
 
@@ -29,13 +28,7 @@
     min-width: 200px;
 }
 
-.leaflet-popup-tip {
-    box-shadow: none !important;
-}
-
-.popup-card {
-    cursor: pointer;
-}
+.popup-card { cursor: pointer; }
 
 .popup-image {
     width: 100%;
@@ -45,9 +38,7 @@
     display: block;
 }
 
-.popup-info {
-    padding: 0.625rem 0.75rem;
-}
+.popup-info { padding: 0.625rem 0.75rem; }
 
 .popup-city {
     font-family: var(--font-heading);
@@ -59,65 +50,54 @@
 
 .popup-country {
     font-size: 0.75rem;
-    color: var(--color-accent);
+    color: var(--color-text-muted);
     font-weight: 500;
     margin-bottom: 4px;
 }
 
 .popup-detail-link {
     font-size: 0.75rem;
-    color: var(--color-accent-warm);
+    color: var(--color-accent);
     font-weight: 500;
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
 }
 
-.popup-detail-link:hover {
-    text-decoration: underline;
-}
-
-/* Marker Cluster özelleştirme */
+/* Marker Cluster */
 .marker-cluster-small {
-    background-color: rgba(139, 115, 85, 0.3) !important;
+    background-color: rgba(127, 194, 214, 0.3) !important;
 }
-
 .marker-cluster-small div {
     background-color: var(--color-accent) !important;
-    color: var(--color-surface) !important;
+    color: #fff !important;
     font-family: var(--font-body) !important;
     font-weight: 600 !important;
 }
 
 .marker-cluster-medium {
-    background-color: rgba(196, 149, 106, 0.3) !important;
+    background-color: rgba(53, 150, 180, 0.3) !important;
 }
-
 .marker-cluster-medium div {
-    background-color: var(--color-accent-warm) !important;
-    color: var(--color-surface) !important;
+    background-color: var(--color-text-muted) !important;
+    color: #fff !important;
     font-family: var(--font-body) !important;
     font-weight: 600 !important;
 }
 
 .marker-cluster-large {
-    background-color: rgba(44, 36, 23, 0.3) !important;
+    background-color: rgba(31, 92, 108, 0.3) !important;
 }
-
 .marker-cluster-large div {
     background-color: var(--color-text) !important;
-    color: var(--color-surface) !important;
+    color: #fff !important;
     font-family: var(--font-body) !important;
     font-weight: 600 !important;
 }
 
 @media (max-width: 768px) {
     .map {
-        height: calc(100vh - 180px);
+        height: calc(100vh - 160px);
         min-height: 350px;
     }
-
     .map-container {
         border-radius: 0;
         border-left: none;

@@ -6,12 +6,14 @@
     <title>Kartpostal Detay</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/gallery.css">
     <style>
         .detail-page {
             max-width: 800px;
-            margin: 2rem auto;
+            margin: 1.5rem auto;
             padding: 0 1.5rem;
         }
 
@@ -19,75 +21,186 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 0.9rem;
-            color: var(--color-accent);
+            font-size: 0.85rem;
+            color: var(--color-surface);
             text-decoration: none;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             font-weight: 500;
-            transition: color var(--transition);
+            transition: opacity var(--transition);
         }
 
-        .back-link:hover {
-            color: var(--color-text);
-        }
+        .back-link:hover { opacity: 0.8; }
 
         .detail-card {
             background: var(--color-surface);
             border-radius: var(--radius-lg);
             overflow: hidden;
-            border: 1px solid var(--color-border-light);
             box-shadow: var(--shadow-md);
         }
 
-        .detail-image-wrapper {
+        /* Çift görsel carousel */
+        .detail-carousel {
+            position: relative;
             width: 100%;
             background: var(--color-bg-alt);
+            min-height: 250px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .detail-image-wrapper img {
+        .detail-carousel img {
             width: 100%;
             height: auto;
-            max-height: 70vh;
+            max-height: 65vh;
             object-fit: contain;
+            display: none;
         }
 
+        .detail-carousel img.active-slide { display: block; }
+
+        .detail-carousel .img-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.85);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            color: var(--color-text);
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .detail-carousel .img-nav-prev { left: 12px; }
+        .detail-carousel .img-nav-next { right: 12px; }
+
+        .detail-carousel .img-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        .detail-carousel .img-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            border: none;
+            cursor: pointer;
+        }
+
+        .detail-carousel .img-dot.active { background: #fff; }
+
         .detail-info {
-            padding: 2rem;
+            padding: 1.5rem 2rem 2rem;
         }
 
         .detail-city {
             font-family: var(--font-heading);
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             margin-bottom: 0.25rem;
         }
 
         .detail-country {
-            font-size: 1.1rem;
-            color: var(--color-accent);
+            font-size: 1rem;
+            color: var(--color-text-muted);
             font-weight: 500;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
         }
 
-        .detail-date {
-            font-size: 0.9rem;
-            color: var(--color-text-muted);
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--color-border-light);
+        .detail-original-text {
+            font-size: 0.85rem;
+            font-style: italic;
+            color: var(--color-bg-alt);
+            background: var(--color-border-light);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--color-accent);
         }
 
         .detail-description {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-translation-note {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        /* Mini harita */
+        .detail-section-title {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border-light);
+            color: var(--color-text);
+        }
+
+        .detail-map {
+            width: 100%;
+            height: 220px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        /* Benzer kartpostallar */
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .similar-card {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform var(--transition);
+        }
+
+        .similar-card:hover { transform: translateY(-2px); }
+
+        .similar-card img {
+            width: 100%;
+            aspect-ratio: 3/2;
+            object-fit: cover;
+        }
+
+        .similar-card .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 0.5rem 0.375rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.5));
+        }
+
+        .similar-card .card-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #fff;
         }
 
         .detail-not-found {
             text-align: center;
             padding: 4rem 2rem;
+            color: var(--color-surface);
         }
 
         .detail-not-found h2 {
@@ -97,27 +210,34 @@
         }
 
         @media (max-width: 768px) {
-            .detail-page {
-                margin: 1rem auto;
-            }
-
-            .detail-info {
-                padding: 1.25rem;
-            }
-
-            .detail-city {
-                font-size: 1.5rem;
-            }
+            .detail-page { margin: 1rem auto; }
+            .detail-info { padding: 1.25rem; }
+            .detail-city { font-size: 1.4rem; }
+            .similar-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
         }
     </style>
 </head>
 <body>
     <header class="site-header">
+        <div class="header-top">
+            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+            <img src="images/headerorta.png" alt="" class="header-plane-img">
+        </div>
         <div class="header-inner">
-            <div class="logo">
-                <h1 class="site-title">Kartpostal Koleksiyonu</h1>
-                <p class="site-subtitle">Dunyadan Mektuplar</p>
-            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link" data-i18n="navHome">Ana Sayfa</a>
+                <span class="nav-separator">|</span>
+                <a href="index.html?mode=map" class="nav-link" data-i18n="navMap">Harita</a>
+                <span class="nav-separator">|</span>
+                <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
+                <span class="nav-separator">|</span>
+                <a href="what-to-do.html" class="nav-link" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="tr">TR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="zh">中文</button>
+                </div>
+            </nav>
         </div>
     </header>
 
@@ -127,7 +247,7 @@
                 <path d="M19 12H5"/>
                 <polyline points="12 19 5 12 12 5"/>
             </svg>
-            Koleksiyona don
+            <span data-i18n="backToCollection">Koleksiyona don</span>
         </a>
 
         <div id="detail-content"></div>
@@ -135,10 +255,12 @@
 
     <footer class="site-footer">
         <div class="footer-inner">
-            <p>&copy; 2026 Kartpostal Koleksiyonu &mdash; Dunya'nin dort bir yanindan mektuplar.</p>
+            <p data-i18n="footerText">&copy; 2026 Baska Topraklarin Renkleri</p>
         </div>
     </footer>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
     <script src="js/postcard-page.js"></script>
 </body>

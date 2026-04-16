@@ -8,9 +8,7 @@ const PostcardMap = (function () {
     let markers = [];
     let initialized = false;
 
-    function init() {
-        // Harita henüz oluşturulmadı, ilk gösterimde oluşturulacak
-    }
+    function init() {}
 
     function ensureMap() {
         if (initialized) return;
@@ -38,7 +36,6 @@ const PostcardMap = (function () {
 
     function show(postcards) {
         ensureMap();
-
         setTimeout(() => {
             map.invalidateSize();
             updateMarkers(postcards);
@@ -55,15 +52,16 @@ const PostcardMap = (function () {
             if (!postcard.lat || !postcard.lng) return;
 
             const marker = L.marker([postcard.lat, postcard.lng]);
+            const imgSrc = PostcardData.getImage(postcard);
 
             const popupContent = `
                 <div class="popup-card" onclick="Modal.open(PostcardMap.getPostcardById('${postcard.id}'), PostcardMap.getCurrentPostcards())">
-                    <img class="popup-image" src="${Gallery.escapeHtml(postcard.image)}" alt="${Gallery.escapeHtml(postcard.city)}" loading="lazy"
-                         onerror="this.src='data:image/svg+xml,${encodeURIComponent('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"120\" fill=\"%23EDE7DB\"><rect width=\"200\" height=\"120\"/><text x=\"100\" y=\"65\" text-anchor=\"middle\" fill=\"%238B7355\" font-size=\"12\" font-family=\"serif\">Gorsel yok</text></svg>')}'">
+                    <img class="popup-image" src="${Gallery.escapeHtml(imgSrc)}" alt="${Gallery.escapeHtml(postcard.city)}" loading="lazy"
+                         onerror="this.style.display='none'">
                     <div class="popup-info">
                         <p class="popup-city">${Gallery.escapeHtml(postcard.city)}</p>
                         <p class="popup-country">${Gallery.escapeHtml(postcard.country)}</p>
-                        <span class="popup-detail-link">Detay &rarr;</span>
+                        <span class="popup-detail-link">${I18n.t('openNewTab')} &rarr;</span>
                     </div>
                 </div>
             `;
