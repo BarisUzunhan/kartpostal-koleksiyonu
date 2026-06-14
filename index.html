@@ -29,6 +29,8 @@
                 <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
                 <span class="nav-separator">|</span>
                 <a href="what-to-do.html" class="nav-link" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
+                <span class="nav-separator">|</span>
+                <a href="tags.html" class="nav-link" data-i18n="navTags">Etiketler</a>
                 <div class="lang-switcher">
                     <button class="lang-btn active" data-lang="tr">TR</button>
                     <button class="lang-btn" data-lang="en">EN</button>
@@ -107,7 +109,6 @@
                 <div class="modal-info">
                     <h2 id="modal-city" class="modal-city"></h2>
                     <p id="modal-country" class="modal-country"></p>
-                    <div id="modal-original-text" class="modal-original-text" style="display:none;"></div>
                     <p id="modal-description" class="modal-description"></p>
                     <p id="modal-description-2" class="modal-description modal-description-secondary" style="display:none;"></p>
                     <p id="modal-translation-note" class="translation-note" style="display:none;"></p>
@@ -130,8 +131,10 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="js/supabaseClient.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
     <script src="js/modal.js"></script>

@@ -1,0 +1,191 @@
+/* ========================================
+   Editör Sayfası — editor.css
+   ======================================== */
+
+/* ── Toolbar ───────────────────────────── */
+.editor-toolbar {
+    background: var(--color-bg-soft, #f4f1ea);
+    border-bottom: 1px solid #ddd;
+    padding: 0.75rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.editor-toolbar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.editor-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+}
+.editor-filter-group label { color: var(--color-muted, #888); white-space: nowrap; }
+.editor-filter-group select,
+.editor-filter-group input {
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.88rem;
+}
+.search-group input { min-width: 180px; }
+.editor-count { font-size: 0.82rem; color: var(--color-muted, #aaa); margin-left: auto; }
+
+/* ── Liste ─────────────────────────────── */
+.editor-list {
+    max-width: 1200px;
+    margin: 1rem auto;
+    padding: 0 1.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.editor-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 1rem;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e8e3da;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: box-shadow 0.15s;
+}
+.editor-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.editor-row.needs-review { border-left: 4px solid #d4a853; }
+
+.editor-row-img img {
+    width: 80px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+}
+.no-img-placeholder {
+    width: 80px; height: 55px;
+    background: #f0ece4;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-size: 1.5rem;
+}
+.editor-row-info { min-width: 0; }
+.editor-row-title { display: block; font-size: 0.95rem; font-weight: 600; }
+.editor-row-date  { font-size: 0.8rem; color: var(--color-muted, #aaa); }
+.review-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: #a07020;
+    background: #fdf3d7;
+    border-radius: 10px;
+    padding: 0.1rem 0.5rem;
+    margin-top: 0.25rem;
+}
+.editor-row-tags { margin-top: 0.25rem; }
+
+/* ── Düzenleme Modal ─────────────────────── */
+.edit-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.edit-modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.edit-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #eee;
+}
+.edit-modal-header h2 { font-size: 1.1rem; margin: 0; }
+.edit-modal-close {
+    background: none; border: none; font-size: 1.5rem;
+    cursor: pointer; color: #888; line-height: 1; padding: 0;
+}
+.edit-modal-body {
+    overflow-y: auto;
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.edit-modal-footer {
+    padding: 0.9rem 1.25rem;
+    border-top: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.save-status { font-size: 0.85rem; color: var(--color-accent, #7a9a8a); }
+
+/* ── Edit sections ───────────────────────── */
+.edit-section { }
+.edit-section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted, #999);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #eee;
+}
+
+/* ── Görseller ───────────────────────────── */
+.edit-images-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.edit-image-slot img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border: 1px solid #e0ddd8;
+}
+.edit-image-slot label { font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.4rem; }
+.optional { font-weight: 400; color: var(--color-muted, #aaa); font-size: 0.8rem; }
+.edit-image-slot input[type=url] {
+    width: 100%; padding: 0.35rem 0.6rem;
+    border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.82rem; font-family: inherit;
+    margin-bottom: 0.4rem;
+    box-sizing: border-box;
+}
+.edit-image-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.file-input-sm { display: none; }
+.btn-sm { padding: 0.2rem 0.6rem; font-size: 0.78rem; }
+
+/* ── Review ────────────────────────────── */
+.review-reasons-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+.review-reason-tag {
+    background: #fdf3d7; color: #a07020;
+    border-radius: 10px; padding: 0.15rem 0.55rem;
+    font-size: 0.8rem;
+}
+.review-resolved-label { font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }

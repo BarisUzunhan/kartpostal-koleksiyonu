@@ -1,11 +1,12 @@
 /* ========================================
-   Admin Paneli — Form İşleme, CRUD
+   Admin Paneli — Supabase Auth + CRUD + Etiket
    ======================================== */
 
-(function () {
+(async function () {
     const loginSection = document.getElementById('login-section');
     const adminPanel = document.getElementById('admin-panel');
     const logoutBtn = document.getElementById('logout-btn');
+    const editorLink = document.getElementById('editor-link');
     const loginForm = document.getElementById('login-form');
     const loginError = document.getElementById('login-error');
     const postcardForm = document.getElementById('postcard-form');
@@ -24,44 +25,63 @@
     const placeholderBack = document.getElementById('upload-placeholder-back');
     const uploadAreaFront = document.getElementById('image-upload-front');
     const uploadAreaBack = document.getElementById('image-upload-back');
+    const tagsInput = document.getElementById('form-tags');
+    const tagsChips = document.getElementById('form-tags-chips');
 
     let adminMap = null;
     let adminMarker = null;
-    let currentFrontData = '';
-    let currentBackData = '';
+    let currentFrontFile = null;
+    let currentBackFile = null;
+    let currentTags = [];
 
-    if (Auth.isAuthenticated()) showAdmin();
+    // ── Oturum kontrolü ─────────────────────────────────────────────────
+    const session = await Auth.getSession();
+    if (session) showAdmin();
 
-    // --- Giriş ---
+    Auth.onAuthChange((event, session) => {
+        if (session) showAdmin();
+        else { showLogin(); }
+    });
+
+    // ── Giriş ────────────────────────────────────────────────────────────
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const username = document.getElementById('login-username').value;
+        const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        const success = await Auth.login(username, password);
-        if (success) {
+        formSubmitBtn && (formSubmitBtn.disabled = true);
+        const result = await Auth.login(email, password);
+        if (result.success) {
             loginError.style.display = 'none';
             showAdmin();
         } else {
             loginError.style.display = 'block';
+            loginError.textContent = result.message || 'E-posta veya şifre hatalı.';
         }
+        formSubmitBtn && (formSubmitBtn.disabled = false);
     });
 
-    logoutBtn.addEventListener('click', () => {
-        Auth.logout();
+    logoutBtn.addEventListener('click', async () => {
+        await Auth.logout();
+        showLogin();
+    });
+
+    function showLogin() {
         loginSection.style.display = 'flex';
         adminPanel.style.display = 'none';
         logoutBtn.style.display = 'none';
-    });
+        if (editorLink) editorLink.style.display = 'none';
+    }
 
-    function showAdmin() {
+    async function showAdmin() {
         loginSection.style.display = 'none';
         adminPanel.style.display = 'block';
         logoutBtn.style.display = 'inline-flex';
+        if (editorLink) editorLink.style.display = 'inline';
         initAdminMap();
-        loadTable();
+        await loadTable();
     }
 
-    // --- Admin Haritası ---
+    // ── Admin Haritası ───────────────────────────────────────────────────
     function initAdminMap() {
         if (adminMap) return;
         adminMap = L.map('admin-map').setView([39.9, 32.8], 3);
@@ -75,11 +95,8 @@
     function setMapMarker(lat, lng) {
         document.getElementById('form-lat').value = lat.toFixed(6);
         document.getElementById('form-lng').value = lng.toFixed(6);
-        if (adminMarker) {
-            adminMarker.setLatLng([lat, lng]);
-        } else {
-            adminMarker = L.marker([lat, lng]).addTo(adminMap);
-        }
+        if (adminMarker) adminMarker.setLatLng([lat, lng]);
+        else adminMarker = L.marker([lat, lng]).addTo(adminMap);
     }
 
     document.getElementById('form-lat').addEventListener('change', updateMarkerFromInputs);
@@ -88,78 +105,148 @@
     function updateMarkerFromInputs() {
         const lat = parseFloat(document.getElementById('form-lat').value);
         const lng = parseFloat(document.getElementById('form-lng').value);
-        if (!isNaN(lat) && !isNaN(lng)) {
-            setMapMarker(lat, lng);
-            adminMap.setView([lat, lng], 8);
-        }
+        if (!isNaN(lat) && !isNaN(lng)) { setMapMarker(lat, lng); adminMap.setView([lat, lng], 8); }
     }
 
-    // --- Görsel yükleme (ön + arka) ---
+    // ── Etiket alanı ─────────────────────────────────────────────────────
+    function setupTagInput() {
+        function addTag(raw) {
+            const tag = raw.trim();
+            if (!tag || currentTags.includes(tag)) return;
+            currentTags.push(tag);
+            renderTagChips();
+        }
+
+        tagsInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                const val = tagsInput.value.replace(/,+$/, '').trim();
+                if (val) { addTag(val); tagsInput.value = ''; }
+            }
+        });
+
+        tagsInput.addEventListener('blur', () => {
+            const val = tagsInput.value.replace(/,+$/, '').trim();
+            if (val) { addTag(val); tagsInput.value = ''; }
+        });
+
+        // virgülle ayrılmış toplu paste
+        tagsInput.addEventListener('paste', (e) => {
+            setTimeout(() => {
+                const parts = tagsInput.value.split(',');
+                parts.forEach(p => { if (p.trim()) addTag(p.trim()); });
+                tagsInput.value = '';
+            }, 50);
+        });
+    }
+    setupTagInput();
+
+    function renderTagChips() {
+        tagsChips.innerHTML = '';
+        currentTags.forEach(tag => {
+            const chip = document.createElement('span');
+            chip.className = 'admin-tag-chip';
+            chip.textContent = tag;
+            chip.title = 'Kaldırmak için tıkla';
+            chip.addEventListener('click', () => {
+                currentTags = currentTags.filter(t => t !== tag);
+                renderTagChips();
+            });
+            tagsChips.appendChild(chip);
+        });
+    }
+
+    // ── Görsel yükleme ────────────────────────────────────────────────────
     setupImageUpload(imageFrontInput, uploadAreaFront, previewFront, placeholderFront, 'front');
     setupImageUpload(imageBackInput, uploadAreaBack, previewBack, placeholderBack, 'back');
 
     function setupImageUpload(input, area, preview, placeholder, side) {
         input.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) processImage(file, preview, placeholder, side);
+            if (file) { storeFile(file, side); showPreview(file, preview, placeholder); }
         });
         area.addEventListener('dragover', (e) => { e.preventDefault(); area.classList.add('dragover'); });
         area.addEventListener('dragleave', () => area.classList.remove('dragover'));
         area.addEventListener('drop', (e) => {
-            e.preventDefault();
-            area.classList.remove('dragover');
+            e.preventDefault(); area.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) processImage(file, preview, placeholder, side);
+            if (file?.type.startsWith('image/')) { storeFile(file, side); showPreview(file, preview, placeholder); }
         });
     }
 
-    function processImage(file, preview, placeholder, side) {
+    function storeFile(file, side) {
+        if (side === 'front') currentFrontFile = file;
+        else currentBackFile = file;
+    }
+
+    function showPreview(file, preview, placeholder) {
         const reader = new FileReader();
         reader.onload = (e) => {
-            const data = e.target.result;
-            if (side === 'front') currentFrontData = data;
-            else currentBackData = data;
-            preview.src = data;
+            preview.src = e.target.result;
             preview.style.display = 'block';
             placeholder.style.display = 'none';
         };
         reader.readAsDataURL(file);
     }
 
-    // --- Form gönderimi ---
-    postcardForm.addEventListener('submit', (e) => {
+    async function uploadToStorage(file, path) {
+        const { error } = await SupabaseClient.storage
+            .from('postcards')
+            .upload(path, file, { upsert: true });
+        if (error) throw new Error(`Görsel yükleme hatası: ${error.message}`);
+        const { data } = SupabaseClient.storage.from('postcards').getPublicUrl(path);
+        return data.publicUrl;
+    }
+
+    // ── Form gönderimi ───────────────────────────────────────────────────
+    postcardForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const editId = editIdField.value;
-        const city = document.getElementById('form-city').value.trim();
+        const city    = document.getElementById('form-city').value.trim();
         const country = document.getElementById('form-country').value.trim();
-        const date = document.getElementById('form-date').value;
-        const description = document.getElementById('form-description').value.trim();
+        const date    = document.getElementById('form-date').value;
+        const description    = document.getElementById('form-description').value.trim();
         const description_en = document.getElementById('form-description-en').value.trim();
-        const originalText = document.getElementById('form-original-text').value.trim();
         const lat = parseFloat(document.getElementById('form-lat').value);
         const lng = parseFloat(document.getElementById('form-lng').value);
 
         if (!city || !country || !date || isNaN(lat) || isNaN(lng)) {
-            alert('Lutfen tum zorunlu alanlari doldurun.');
+            alert('Lütfen tüm zorunlu alanları doldurun.');
             return;
         }
-        if (!editId && !currentFrontData) {
-            alert('Lutfen on yuz gorseli secin.');
+        if (!editId && !currentFrontFile) {
+            alert('Lütfen ön yüz görseli seçin.');
             return;
         }
 
-        const data = { city, country, date, description, description_en, originalText, lat, lng };
-        if (currentFrontData) data.imageFront = currentFrontData;
-        if (currentBackData) data.imageBack = currentBackData;
+        formSubmitBtn.disabled = true;
+        formSubmitBtn.textContent = 'Yükleniyor...';
 
-        if (editId) {
-            PostcardData.update(editId, data);
-        } else {
-            PostcardData.add(data);
+        try {
+            const record = { city, country, date, description, description_en, lat, lng, tags: currentTags };
+            const safeName = `${Date.now()}-${city.toLowerCase().replace(/[^a-z0-9]/gi, '-')}`;
+
+            if (currentFrontFile) {
+                record.image_front = await uploadToStorage(currentFrontFile, `optimized/${safeName}-front.jpg`);
+                record.image_front_original = await uploadToStorage(currentFrontFile, `original/${safeName}-front.jpg`);
+            }
+            if (currentBackFile) {
+                record.image_back = await uploadToStorage(currentBackFile, `optimized/${safeName}-back.jpg`);
+                record.image_back_original = await uploadToStorage(currentBackFile, `original/${safeName}-back.jpg`);
+            }
+
+            if (editId) await PostcardData.update(editId, record);
+            else await PostcardData.add(record);
+
+            PostcardData.invalidateCache();
+            resetForm();
+            await loadTable();
+        } catch (err) {
+            alert(`Hata: ${err.message}`);
+        } finally {
+            formSubmitBtn.disabled = false;
+            formSubmitBtn.textContent = editIdField.value ? 'Güncelle' : 'Kartpostal Ekle';
         }
-
-        resetForm();
-        loadTable();
     });
 
     formCancelBtn.addEventListener('click', resetForm);
@@ -167,8 +254,10 @@
     function resetForm() {
         postcardForm.reset();
         editIdField.value = '';
-        currentFrontData = '';
-        currentBackData = '';
+        currentFrontFile = null;
+        currentBackFile = null;
+        currentTags = [];
+        renderTagChips();
         previewFront.style.display = 'none';
         previewBack.style.display = 'none';
         placeholderFront.style.display = '';
@@ -179,38 +268,42 @@
         if (adminMarker) { adminMap.removeLayer(adminMarker); adminMarker = null; }
     }
 
-    // --- Tablo ---
-    function loadTable() {
-        const postcards = PostcardData.getAll();
+    // ── Tablo ─────────────────────────────────────────────────────────────
+    async function loadTable() {
+        const postcards = await PostcardData.getAll();
         tbody.innerHTML = '';
 
-        if (postcards.length === 0) { tableEmpty.style.display = 'block'; return; }
+        if (!postcards.length) { tableEmpty.style.display = 'block'; return; }
         tableEmpty.style.display = 'none';
 
         postcards.forEach(pc => {
             const tr = document.createElement('tr');
-            const imgSrc = pc.imageFront || pc.image || '';
-            const formattedDate = formatDate(pc.date);
+            const imgSrc = pc.image_front || pc.imageFront || pc.image || '';
+            const formattedDate = pc.date ? new Date(pc.date).toLocaleDateString('tr-TR', {
+                year: 'numeric', month: 'short', day: 'numeric'
+            }) : '';
+
+            const tagHtml = (pc.tags || []).map(t => `<span class="table-tag">${escapeHtml(t)}</span>`).join(' ');
 
             tr.innerHTML = `
                 <td><img class="table-thumb" src="${escapeHtml(imgSrc)}" alt="${escapeHtml(pc.city)}" onerror="this.style.display='none'"></td>
                 <td>${escapeHtml(pc.city)}</td>
                 <td>${escapeHtml(pc.country)}</td>
                 <td>${formattedDate}</td>
+                <td class="table-tags-cell">${tagHtml || '<span class="no-tags">—</span>'}</td>
                 <td class="table-actions">
-                    <button class="btn btn-edit">Duzenle</button>
+                    <button class="btn btn-edit">Düzenle</button>
                     <button class="btn btn-danger">Sil</button>
                 </td>
             `;
-
             tr.querySelector('.btn-edit').addEventListener('click', () => editPostcard(pc));
-            tr.querySelector('.btn-danger').addEventListener('click', () => {
-                if (confirm(`"${pc.city}, ${pc.country}" kartpostalini silmek istediginize emin misiniz?`)) {
-                    PostcardData.remove(pc.id);
-                    loadTable();
+            tr.querySelector('.btn-danger').addEventListener('click', async () => {
+                if (confirm(`"${pc.city}, ${pc.country}" kartpostalını silmek istediğinize emin misiniz?`)) {
+                    await PostcardData.remove(pc.id);
+                    PostcardData.invalidateCache();
+                    await loadTable();
                 }
             });
-
             tbody.appendChild(tr);
         });
     }
@@ -219,30 +312,27 @@
         editIdField.value = pc.id;
         document.getElementById('form-city').value = pc.city;
         document.getElementById('form-country').value = pc.country;
-        document.getElementById('form-date').value = pc.date;
+        document.getElementById('form-date').value = pc.date || '';
         document.getElementById('form-description').value = pc.description || '';
         document.getElementById('form-description-en').value = pc.description_en || '';
-        document.getElementById('form-original-text').value = pc.originalText || '';
-        document.getElementById('form-lat').value = pc.lat;
-        document.getElementById('form-lng').value = pc.lng;
+        document.getElementById('form-lat').value = pc.lat || '';
+        document.getElementById('form-lng').value = pc.lng || '';
 
-        currentFrontData = '';
-        currentBackData = '';
-        const frontSrc = pc.imageFront || pc.image || '';
+        currentTags = [...(pc.tags || [])];
+        renderTagChips();
+
+        currentFrontFile = null; currentBackFile = null;
+        const frontSrc = pc.image_front || pc.imageFront || pc.image || '';
         if (frontSrc) { previewFront.src = frontSrc; previewFront.style.display = 'block'; placeholderFront.style.display = 'none'; }
-        if (pc.imageBack) { previewBack.src = pc.imageBack; previewBack.style.display = 'block'; placeholderBack.style.display = 'none'; }
+        const backSrc = pc.image_back || pc.imageBack || '';
+        if (backSrc) { previewBack.src = backSrc; previewBack.style.display = 'block'; placeholderBack.style.display = 'none'; }
 
         if (pc.lat && pc.lng) { setMapMarker(pc.lat, pc.lng); adminMap.setView([pc.lat, pc.lng], 6); }
 
-        formTitle.textContent = 'Kartpostal Duzenle';
-        formSubmitBtn.textContent = 'Guncelle';
+        formTitle.textContent = 'Kartpostal Düzenle';
+        formSubmitBtn.textContent = 'Güncelle';
         formCancelBtn.style.display = 'inline-flex';
         postcardForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        return new Date(dateStr).toLocaleDateString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
     function escapeHtml(str) {

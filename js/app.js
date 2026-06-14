@@ -1,13 +1,14 @@
 /* ========================================
    Ana Uygulama — Başlatma, Mod Değişimi
+   (Supabase async veri yükleme)
    ======================================== */
 
-(function () {
+(async function () {
     // i18n başlat
     I18n.init();
 
-    // Verileri yükle
-    const postcards = PostcardData.getAll();
+    // Veri yükle (Supabase'den async)
+    const postcards = await PostcardData.getAll();
 
     // Modal başlat
     Modal.init();
@@ -17,6 +18,11 @@
 
     // Harita başlat
     PostcardMap.init();
+
+    // URL'de etiket veya mod parametresi var mı?
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTag = urlParams.get('tag');
+    const urlMode = urlParams.get('mode');
 
     // Veri durumuna göre görünüm
     const emptyState = document.getElementById('empty-state');
@@ -29,31 +35,31 @@
         paginationContainer.style.display = 'none';
     } else {
         emptyState.style.display = 'none';
+
+        // Etiket parametresi varsa uygula
+        if (urlTag) {
+            Gallery.setActiveTag(urlTag);
+        }
+
         Gallery.render(PostcardData.filterPostcards(postcards, {
-            sortBy: document.getElementById('filter-sort').value
+            sortBy: document.getElementById('filter-sort').value,
+            tag: urlTag || ''
         }));
     }
 
-    // Mod değişimi
+    // ── Mod değişimi (Galeri ↔ Harita) ──────────────────────────────────
     const navLinks = document.querySelectorAll('.nav-link');
     const mapLink = document.getElementById('nav-map-link');
     const mapContainer = document.getElementById('map-container');
     const filterBar = document.getElementById('filter-bar');
     let currentMode = 'gallery';
 
-    // URL parametresi kontrolü
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('mode') === 'map') {
-        switchToMap();
-    }
+    if (urlMode === 'map') switchToMap();
 
     mapLink.addEventListener('click', (e) => {
         e.preventDefault();
-        if (currentMode === 'map') {
-            switchToGallery();
-        } else {
-            switchToMap();
-        }
+        if (currentMode === 'map') switchToGallery();
+        else switchToMap();
     });
 
     function switchToMap() {
@@ -83,10 +89,8 @@
         }
     }
 
-    // Pencere boyutu değişince haritayı yeniden boyutlandır
+    // Harita boyutlandırma
     window.addEventListener('resize', () => {
-        if (currentMode === 'map') {
-            PostcardMap.resize();
-        }
+        if (currentMode === 'map') PostcardMap.resize();
     });
 })();

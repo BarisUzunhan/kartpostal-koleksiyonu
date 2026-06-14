@@ -1,0 +1,23 @@
+# Supabase service role key — ASLA commit etme
+.env
+.env.local
+.env*.local
+
+# Node
+node_modules/
+
+# Migration geçici dosyaları
+scripts/review-needed.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Eski site (büyük, sadece yerel referans — repoya girmesin)
+EskiSiteDatalari/
+
+# Playwright test artifacts
+.playwright-mcp/
+
+# Diğer
+ISBN.txt

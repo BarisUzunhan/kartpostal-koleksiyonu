@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editör — Baska Topraklarin Renkleri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/editor.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-top">
+            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+        </div>
+        <div class="header-inner">
+            <nav class="main-nav">
+                <span style="font-weight:600;color:var(--color-text);">Editör</span>
+                <span class="nav-separator">|</span>
+                <a href="admin.html" class="nav-link">Yönetici Paneli</a>
+                <span class="nav-separator">|</span>
+                <a href="index.html" class="nav-link">Siteye Dön</a>
+                <button id="logout-btn" class="logout-btn" style="display:none;">Çıkış Yap</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Giriş formu (oturum yoksa) -->
+    <div id="login-section" class="login-section">
+        <div class="login-card">
+            <div class="login-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M12 15v2"/><rect x="5" y="10" width="14" height="10" rx="2"/>
+                    <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
+                </svg>
+            </div>
+            <h2 class="login-title">Editör Girişi</h2>
+            <form id="login-form" class="login-form">
+                <div class="form-field">
+                    <label for="login-email">E-posta</label>
+                    <input type="email" id="login-email" required autocomplete="email">
+                </div>
+                <div class="form-field">
+                    <label for="login-password">Şifre</label>
+                    <input type="password" id="login-password" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="login-error" style="display:none;">E-posta veya şifre hatalı.</p>
+                <button type="submit" class="btn btn-primary">Giriş Yap</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Editör paneli -->
+    <main id="editor-panel" class="admin-main" style="display:none;">
+
+        <!-- Filtreler -->
+        <div class="editor-toolbar">
+            <div class="editor-toolbar-inner">
+                <div class="editor-filter-group">
+                    <label>Göster:</label>
+                    <select id="filter-view">
+                        <option value="review">Gözden Geçirilmeli</option>
+                        <option value="all">Tümü</option>
+                    </select>
+                </div>
+                <div class="editor-filter-group">
+                    <label>Sebep:</label>
+                    <select id="filter-reason">
+                        <option value="">Tümü</option>
+                        <option value="no_coords">Koordinat yok</option>
+                        <option value="no_image">Görsel yok</option>
+                        <option value="multi_postcard">Çok kartpostal</option>
+                        <option value="front_back_ambiguous">Ön/arka belirsiz</option>
+                        <option value="no_country">Ülke yok</option>
+                        <option value="country_mismatch">Ülke çakışması</option>
+                    </select>
+                </div>
+                <div class="editor-filter-group search-group">
+                    <input type="text" id="editor-search" placeholder="Şehir veya ülke ara...">
+                </div>
+                <span id="editor-count" class="editor-count"></span>
+            </div>
+        </div>
+
+        <!-- Kartpostal listesi -->
+        <div id="editor-list" class="editor-list">
+            <div class="loading-state">Yükleniyor...</div>
+        </div>
+
+        <!-- Düzenleme modal -->
+        <div id="edit-modal" class="edit-modal-overlay" style="display:none;">
+            <div class="edit-modal-content">
+                <div class="edit-modal-header">
+                    <h2 id="edit-modal-title">Kartpostal Düzenle</h2>
+                    <button class="edit-modal-close" id="edit-modal-close">&times;</button>
+                </div>
+
+                <div class="edit-modal-body">
+                    <input type="hidden" id="edit-record-id">
+
+                    <!-- Görseller -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Görseller</h3>
+                        <div class="edit-images-grid">
+                            <div class="edit-image-slot">
+                                <label>Ön Yüz</label>
+                                <img id="edit-img-front" src="" alt="Ön yüz" onerror="this.style.display='none'">
+                                <input type="url" id="edit-front-url" placeholder="Görsel URL">
+                                <div class="edit-image-actions">
+                                    <input type="file" id="edit-front-file" accept="image/*" class="file-input-sm">
+                                    <label for="edit-front-file" class="btn btn-secondary btn-sm">Dosya Yükle</label>
+                                    <a id="edit-front-original" href="#" target="_blank" class="btn btn-secondary btn-sm" style="display:none;">Orijinali Gör</a>
+                                </div>
+                            </div>
+                            <div class="edit-image-slot">
+                                <label>Arka Yüz <span class="optional">(opsiyonel)</span></label>
+                                <img id="edit-img-back" src="" alt="Arka yüz" onerror="this.style.display='none'">
+                                <input type="url" id="edit-back-url" placeholder="Görsel URL">
+                                <div class="edit-image-actions">
+                                    <input type="file" id="edit-back-file" accept="image/*" class="file-input-sm">
+                                    <label for="edit-back-file" class="btn btn-secondary btn-sm">Dosya Yükle</label>
+                                    <a id="edit-back-original" href="#" target="_blank" class="btn btn-secondary btn-sm" style="display:none;">Orijinali Gör</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Temel bilgiler -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Temel Bilgiler</h3>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Şehir</label>
+                                <input type="text" id="edit-city">
+                            </div>
+                            <div class="form-field">
+                                <label>Ülke</label>
+                                <input type="text" id="edit-country">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>Enlem</label>
+                                <input type="number" id="edit-lat" step="any">
+                            </div>
+                            <div class="form-field">
+                                <label>Boylam</label>
+                                <input type="number" id="edit-lng" step="any">
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label>Tarih</label>
+                            <input type="date" id="edit-date">
+                        </div>
+                    </div>
+
+                    <!-- Açıklamalar -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Açıklamalar / Mektup</h3>
+                        <div class="form-field">
+                            <label>Türkçe (description)</label>
+                            <textarea id="edit-description" rows="5"></textarea>
+                        </div>
+                        <div class="form-field">
+                            <label>İngilizce (description_en)</label>
+                            <textarea id="edit-description-en" rows="5"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Etiketler -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Etiketler</h3>
+                        <input type="text" id="edit-tags-input" placeholder="Etiket ekle (Enter veya virgül)">
+                        <div id="edit-tags-chips" class="admin-tags-preview" style="margin-top:0.5rem;"></div>
+                    </div>
+
+                    <!-- Review sebepleri -->
+                    <div class="edit-section" id="review-reasons-section" style="display:none;">
+                        <h3 class="edit-section-title">⚠️ Gözden Geçirilmesi Gerekenler</h3>
+                        <div id="review-reasons-list" class="review-reasons-list"></div>
+                        <label class="review-resolved-label">
+                            <input type="checkbox" id="edit-resolved"> Bu kayıt tamamlandı, review'dan çıkar
+                        </label>
+                    </div>
+                </div>
+
+                <div class="edit-modal-footer">
+                    <button class="btn btn-primary" id="edit-save-btn">Kaydet</button>
+                    <button class="btn btn-secondary" id="edit-cancel-btn">İptal</button>
+                    <span id="edit-save-status" class="save-status"></span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>© 2026 Baska Topraklarin Renkleri — Editör</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/editor.js"></script>
+</body>
+</html>

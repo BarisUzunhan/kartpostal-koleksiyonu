@@ -1,5 +1,5 @@
 /* ========================================
-   Modal — Çift Görsel + Dil Desteği
+   Modal — Çift Görsel + Dil Desteği + Etiket Rozetleri
    ======================================== */
 
 const Modal = (function () {
@@ -14,7 +14,6 @@ const Modal = (function () {
     const imgDots = document.getElementById('img-dots');
     const cityEl = document.getElementById('modal-city');
     const countryEl = document.getElementById('modal-country');
-    const originalTextEl = document.getElementById('modal-original-text');
     const descEl = document.getElementById('modal-description');
     const desc2El = document.getElementById('modal-description-2');
     const translationNoteEl = document.getElementById('modal-translation-note');
@@ -27,30 +26,13 @@ const Modal = (function () {
 
     function init() {
         closeBtn.addEventListener('click', close);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) close();
-        });
+        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigatePrev(); });
+        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateNext(); });
 
-        prevBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            navigatePrev();
-        });
-
-        nextBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            navigateNext();
-        });
-
-        imgPrevBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showSlide(0);
-        });
-
-        imgNextBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            showSlide(1);
-        });
+        imgPrevBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(0); });
+        imgNextBtn.addEventListener('click', (e) => { e.stopPropagation(); showSlide(1); });
 
         imgDots.addEventListener('click', (e) => {
             if (e.target.classList.contains('img-dot')) {
@@ -72,10 +54,8 @@ const Modal = (function () {
         postcardList = list || [];
         currentIndex = postcardList.findIndex(p => p.id === postcard.id);
         currentSlide = 0;
-
         renderContent(postcard);
         updateNavButtons();
-
         overlay.classList.add('visible');
         document.body.style.overflow = 'hidden';
     }
@@ -88,14 +68,15 @@ const Modal = (function () {
 
     function renderContent(postcard) {
         const frontSrc = PostcardData.getImage(postcard);
-        const backSrc = postcard.imageBack || '';
+        // Supabase şeması: image_back; eski uyumluluk: imageBack
+        const backSrc = postcard.image_back || postcard.imageBack || '';
 
         imgFront.src = frontSrc;
         imgFront.alt = postcard.city;
 
         if (backSrc) {
             imgBack.src = backSrc;
-            imgBack.alt = postcard.city + ' - arka yuz';
+            imgBack.alt = postcard.city + ' - arka yüz';
             imgBack.style.display = '';
             imgPrevBtn.style.display = '';
             imgNextBtn.style.display = '';
@@ -113,13 +94,7 @@ const Modal = (function () {
         cityEl.textContent = postcard.city;
         countryEl.textContent = postcard.country;
 
-        if (postcard.originalText) {
-            originalTextEl.textContent = postcard.originalText;
-            originalTextEl.style.display = '';
-        } else {
-            originalTextEl.style.display = 'none';
-        }
-
+        // Açıklamalar (TR + EN)
         const desc = I18n.getDescription(postcard);
         descEl.textContent = desc.text;
         descEl.style.display = desc.text ? '' : 'none';
@@ -138,14 +113,47 @@ const Modal = (function () {
             translationNoteEl.style.display = 'none';
         }
 
+        // Etiket rozetleri
+        renderTags(postcard);
+
         openPageEl.href = `postcard.html?id=${encodeURIComponent(postcard.id)}`;
+    }
+
+    function renderTags(postcard) {
+        // Varsa önceki etiket alanını temizle
+        const existing = document.getElementById('modal-tags');
+        if (existing) existing.remove();
+
+        const tags = postcard.tags || [];
+        if (!tags.length) return;
+
+        const tagsDiv = document.createElement('div');
+        tagsDiv.id = 'modal-tags';
+        tagsDiv.className = 'modal-tags';
+
+        tags.forEach(tag => {
+            const chip = document.createElement('a');
+            chip.className = 'tag-chip';
+            chip.textContent = tag;
+            chip.href = `index.html?tag=${encodeURIComponent(tag)}`;
+            chip.title = `"${tag}" etiketini görüntüle`;
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                close();
+                // Sayfayı etiketle yenile
+                window.location.href = `index.html?tag=${encodeURIComponent(tag)}`;
+            });
+            tagsDiv.appendChild(chip);
+        });
+
+        // Açıklama alanının altına ekle
+        openPageEl.before(tagsDiv);
     }
 
     function showSlide(index) {
         currentSlide = index;
         imgFront.classList.toggle('active-slide', index === 0);
         imgBack.classList.toggle('active-slide', index === 1);
-
         const dots = imgDots.querySelectorAll('.img-dot');
         dots.forEach((dot, i) => dot.classList.toggle('active', i === index));
     }

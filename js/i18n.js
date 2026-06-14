@@ -15,6 +15,7 @@ const I18n = (function () {
             navMap: 'Harita',
             navAbout: 'Hakkimda',
             navWhatToDo: 'Ne Yapmaliyim?',
+            navTags: 'Etiketler',
             filterCountry: 'Ulke',
             filterCity: 'Sehir',
             filterSearch: 'Ara...',
@@ -32,7 +33,6 @@ const I18n = (function () {
             close: 'Kapat',
             frontSide: 'On Yuz',
             backSide: 'Arka Yuz',
-            originalText: 'Orijinal Metin',
             description: 'Aciklama',
             similarCards: 'Benzer Kartpostallar',
             location: 'Konum',
@@ -44,7 +44,19 @@ const I18n = (function () {
             translationNote: '',
             backToCollection: 'Koleksiyona don',
             aboutTitle: 'Hakkimda',
-            whatToDoTitle: 'Ne Yapmaliyim?'
+            whatToDoTitle: 'Ne Yapmaliyim?',
+            tagCloudTitle: 'Etiket Bulutu',
+            tagCloudDesc: 'Bir etikete tiklayarak o etiketi iceren kartpostallari goruntuleyin.',
+            removeTag: 'Etiketi kald\u0131r',
+            needsReview: 'Gozden Gecirilmeli',
+            reviewReasonNoCoords: 'Koordinat yok',
+            reviewReasonNoImage: 'Gorsel yok',
+            reviewReasonMultiPostcard: 'Cok kartpostal',
+            reviewReasonAmbiguous: 'Belirsiz on/arka',
+            reviewReasonNoCountry: 'Ulke tespit edilemedi',
+            savingChanges: 'Kaydediliyor...',
+            saveSuccess: 'Kaydedildi!',
+            saveError: 'Kaydetme hatasi'
         },
         en: {
             siteTitle: 'Colors of Other Lands',
@@ -53,6 +65,7 @@ const I18n = (function () {
             navMap: 'Map View',
             navAbout: 'About Me',
             navWhatToDo: 'What to Do?',
+            navTags: 'Tags',
             filterCountry: 'Country',
             filterCity: 'City',
             filterSearch: 'Search...',
@@ -70,7 +83,6 @@ const I18n = (function () {
             close: 'Close',
             frontSide: 'Front',
             backSide: 'Back',
-            originalText: 'Original Text',
             description: 'Description',
             similarCards: 'Similar Postcards',
             location: 'Location',
@@ -82,7 +94,19 @@ const I18n = (function () {
             translationNote: '',
             backToCollection: 'Back to collection',
             aboutTitle: 'About Me',
-            whatToDoTitle: 'What to Do?'
+            whatToDoTitle: 'What to Do?',
+            tagCloudTitle: 'Tag Cloud',
+            tagCloudDesc: 'Click a tag to view postcards with that tag.',
+            removeTag: 'Remove tag',
+            needsReview: 'Needs Review',
+            reviewReasonNoCoords: 'No coordinates',
+            reviewReasonNoImage: 'No image',
+            reviewReasonMultiPostcard: 'Multiple postcards',
+            reviewReasonAmbiguous: 'Front/back ambiguous',
+            reviewReasonNoCountry: 'Country not detected',
+            savingChanges: 'Saving...',
+            saveSuccess: 'Saved!',
+            saveError: 'Save error'
         },
         zh: {
             siteTitle: '\u5f02\u57df\u4e4b\u8272',
@@ -91,6 +115,7 @@ const I18n = (function () {
             navMap: '\u5730\u56fe',
             navAbout: '\u5173\u4e8e\u6211',
             navWhatToDo: '\u600e\u4e48\u505a\uff1f',
+            navTags: '\u6807\u7b7e',
             filterCountry: '\u56fd\u5bb6',
             filterCity: '\u57ce\u5e02',
             filterSearch: '\u641c\u7d22...',
@@ -108,7 +133,6 @@ const I18n = (function () {
             close: '\u5173\u95ed',
             frontSide: '\u6b63\u9762',
             backSide: '\u80cc\u9762',
-            originalText: '\u539f\u6587',
             description: '\u8bf4\u660e',
             similarCards: '\u7c7b\u4f3c\u7684\u660e\u4fe1\u7247',
             location: '\u4f4d\u7f6e',
@@ -120,7 +144,19 @@ const I18n = (function () {
             translationNote: '\u81ea\u52a8\u7ffb\u8bd1\uff0c\u53ef\u80fd\u6709\u8bef / Automatically translated, may contain errors',
             backToCollection: '\u8fd4\u56de\u6536\u85cf',
             aboutTitle: '\u5173\u4e8e\u6211',
-            whatToDoTitle: '\u600e\u4e48\u505a\uff1f'
+            whatToDoTitle: '\u600e\u4e48\u505a\uff1f',
+            tagCloudTitle: '\u6807\u7b7e\u4e91',
+            tagCloudDesc: '\u70b9\u51fb\u6807\u7b7e\u67e5\u770b\u76f8\u5173\u660e\u4fe1\u7247\u3002',
+            removeTag: '\u5220\u9664\u6807\u7b7e',
+            needsReview: '\u9700\u8981\u5ba1\u6838',
+            reviewReasonNoCoords: '\u65e0\u5750\u6807',
+            reviewReasonNoImage: '\u65e0\u56fe\u7247',
+            reviewReasonMultiPostcard: '\u591a\u5f20\u660e\u4fe1\u7247',
+            reviewReasonAmbiguous: '\u6b63\u80cc\u9762\u4e0d\u660e\u786e',
+            reviewReasonNoCountry: '\u672a\u68c0\u6d4b\u5230\u56fd\u5bb6',
+            savingChanges: '\u4fdd\u5b58\u4e2d...',
+            saveSuccess: '\u5df2\u4fdd\u5b58\uff01',
+            saveError: '\u4fdd\u5b58\u9519\u8bef'
         }
     };
 
@@ -163,6 +199,7 @@ const I18n = (function () {
     }
 
     function getDescription(postcard) {
+        // Supabase şeması: description + description_en
         return {
             text: postcard.description || '',
             text2: postcard.description_en || '',

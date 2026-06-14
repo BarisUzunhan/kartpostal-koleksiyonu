@@ -1,0 +1,14 @@
+{
+  "name": "colorsofotherlands-migration",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Migration script: WordPress SQL → Supabase (one-time, local only)",
+  "scripts": {
+    "migrate": "node scripts/migrate.mjs",
+    "migrate:dry": "node scripts/migrate.mjs --dry-run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "sharp": "^0.33.5"
+  }
+}

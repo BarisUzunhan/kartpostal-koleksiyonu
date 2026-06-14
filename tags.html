@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etiketler — Baska Topraklarin Renkleri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/tags.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-top">
+            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+            <img src="images/headerorta.png" alt="" class="header-plane-img">
+        </div>
+        <div class="header-inner">
+            <nav class="main-nav">
+                <a href="index.html" class="nav-link" data-i18n="navHome">Ana Sayfa</a>
+                <span class="nav-separator">|</span>
+                <a href="index.html?mode=map" class="nav-link" data-i18n="navMap">Harita</a>
+                <span class="nav-separator">|</span>
+                <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
+                <span class="nav-separator">|</span>
+                <a href="what-to-do.html" class="nav-link" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
+                <span class="nav-separator">|</span>
+                <a href="tags.html" class="nav-link active" data-i18n="navTags">Etiketler</a>
+                <div class="lang-switcher">
+                    <button class="lang-btn active" data-lang="tr">TR</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="zh">中文</button>
+                </div>
+                <a href="admin.html" class="admin-link" title="Yonetici Paneli">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 15v2"/><rect x="5" y="10" width="14" height="10" rx="2"/>
+                        <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content tags-main">
+        <div class="tags-header">
+            <h1 class="tags-title" data-i18n="tagCloudTitle">Etiket Bulutu</h1>
+            <p class="tags-desc" data-i18n="tagCloudDesc">Bir etikete tıklayarak o etiketi içeren kartpostalları görüntüleyin.</p>
+        </div>
+
+        <div id="tag-cloud-container" class="tag-cloud-container">
+            <div class="loading-state">Etiketler yükleniyor...</div>
+        </div>
+
+        <div id="tag-stats" class="tag-stats" style="display:none;">
+            <span id="tag-count-text"></span>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p data-i18n="footerText">© 2026 Baska Topraklarin Renkleri</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/tags-page.js"></script>
+</body>
+</html>
