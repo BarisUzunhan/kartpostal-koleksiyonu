@@ -16,7 +16,7 @@
     const postcard = await PostcardData.getById(id);
     if (!postcard) { showNotFound(); return; }
 
-    document.title = `${postcard.city}, ${postcard.country} — ${I18n.t('siteTitle')}`;
+    document.title = `${postcard.city}, ${I18n.translateCountry(postcard.country)} — ${I18n.t('siteTitle')}`;
 
     const frontSrc = PostcardData.getImage(postcard);
     const backSrc = postcard.image_back || postcard.imageBack || '';
@@ -40,7 +40,7 @@
     // Bilgiler
     html += `<div class="detail-info">`;
     html += `<h2 class="detail-city">${escapeHtml(postcard.city)}</h2>`;
-    html += `<p class="detail-country">${escapeHtml(postcard.country)}</p>`;
+    html += `<p class="detail-country">${escapeHtml(I18n.translateCountry(postcard.country))}</p>`;
 
     // Etiket rozetleri
     const tags = postcard.tags || [];

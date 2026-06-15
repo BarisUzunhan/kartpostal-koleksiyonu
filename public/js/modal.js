@@ -92,7 +92,7 @@ const Modal = (function () {
         showSlide(0);
 
         cityEl.textContent = postcard.city;
-        countryEl.textContent = postcard.country;
+        countryEl.textContent = I18n.translateCountry(postcard.country);
 
         // Açıklamalar (TR + EN)
         const desc = I18n.getDescription(postcard);

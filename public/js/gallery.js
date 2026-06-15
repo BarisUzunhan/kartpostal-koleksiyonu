@@ -66,7 +66,8 @@ const Gallery = (function () {
         card.dataset.id = postcard.id;
 
         const imgSrc = PostcardData.getImage(postcard);
-        const label = escapeHtml(postcard.city) + ', ' + escapeHtml(postcard.country);
+        const translatedCountry = I18n.translateCountry(postcard.country);
+        const label = escapeHtml(postcard.city) + ', ' + escapeHtml(translatedCountry);
 
         card.innerHTML = `
             <div class="card-image-wrapper">
@@ -233,8 +234,18 @@ const Gallery = (function () {
         const countries = PostcardData.getUniqueCountries(postcards);
         countrySelect.innerHTML = `<option value="">${escapeHtml(I18n.t('filterCountry'))}</option>`;
         countries.forEach(c => {
-            countrySelect.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+            const displayName = I18n.translateCountry(c);
+            countrySelect.innerHTML += `<option value="${escapeHtml(c)}">${escapeHtml(displayName)}</option>`;
         });
+    }
+
+    function refreshCountryFilter() {
+        const savedCountry = document.getElementById('filter-country').value;
+        const savedCity = document.getElementById('filter-city').value;
+        populateCountryFilter(allPostcards);
+        document.getElementById('filter-country').value = savedCountry;
+        populateCityFilter(allPostcards, savedCountry);
+        document.getElementById('filter-city').value = savedCity;
     }
 
     function populateCityFilter(postcards, country) {
@@ -283,5 +294,5 @@ const Gallery = (function () {
         return div.innerHTML;
     }
 
-    return { init, render, updateData, applyFilters, getFiltered, formatDate, escapeHtml, setActiveTag };
+    return { init, render, updateData, applyFilters, getFiltered, formatDate, escapeHtml, setActiveTag, refreshCountryFilter };
 })();

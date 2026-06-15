@@ -35,10 +35,10 @@
         return minSize + ((count - minCount) / (maxCount - minCount)) * (maxSize - minSize);
     }
 
-    // Renk: frekansa göre tonlama (düşük → soluk, yüksek → doygun)
+    // Opaklık: düşük frekanslı etiketler bile okunaklı kalsın
     function opacity(count) {
-        if (maxCount === minCount) return 0.75;
-        return 0.45 + ((count - minCount) / (maxCount - minCount)) * 0.55;
+        if (maxCount === minCount) return 0.85;
+        return 0.65 + ((count - minCount) / (maxCount - minCount)) * 0.35;
     }
 
     container.innerHTML = '';

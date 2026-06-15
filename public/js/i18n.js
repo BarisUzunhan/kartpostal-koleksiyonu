@@ -176,6 +176,9 @@ const I18n = (function () {
         localStorage.setItem(LANG_KEY, lang);
         applyTranslations();
         updateLangButtons();
+        if (typeof Gallery !== 'undefined' && Gallery.refreshCountryFilter) {
+            Gallery.refreshCountryFilter();
+        }
     }
 
     function applyTranslations() {
@@ -196,6 +199,11 @@ const I18n = (function () {
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === currentLang);
         });
+    }
+
+    function translateCountry(name) {
+        if (typeof CountryTranslator === 'undefined') return name;
+        return CountryTranslator.translate(name, currentLang);
     }
 
     function getDescription(postcard) {
@@ -220,5 +228,5 @@ const I18n = (function () {
         });
     }
 
-    return { t, getLang, setLang, init, getDescription, applyTranslations };
+    return { t, getLang, setLang, init, getDescription, applyTranslations, translateCountry };
 })();
