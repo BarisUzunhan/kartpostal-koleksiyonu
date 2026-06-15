@@ -86,11 +86,11 @@
         const maxC = entries[0][1];
         const minC = entries[entries.length - 1][1];
 
-        // Çok büyük etiketlerin sırayla dizilmesini önlemek için hafif karıştır
+        // Tam deterministik Fisher-Yates karıştırma — her çalıştırmada aynı sonuç
         const shuffled = [...entries];
-        for (let i = 3; i < shuffled.length; i++) {
-            const j = i + (strHash(shuffled[i][0]) % 5) - 2;
-            if (j >= 3 && j < shuffled.length) [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = strHash(shuffled[i][0] + String(i)) % (i + 1);
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
 
         container.innerHTML = '';
@@ -105,26 +105,38 @@
             const fsize = adjustSize(baseSize, s.u, isCaveat);
             const logN = (Math.log(count) - Math.log(minC)) / (Math.log(maxC) - Math.log(minC) || 1);
 
+            // Küçük etiketlerde outline okunamaz — beyaza zorla
+            const smallTag = logN < 0.35;
+            const useOutline = isOutline && !smallTag;
+
             const a = document.createElement('a');
-            a.className = 'tag-cloud-word' + (isOutline ? ' tag-outline' : '');
+            a.className = 'tag-cloud-word' + (useOutline ? ' tag-outline' : '');
             a.href = `index.html?tag=${encodeURIComponent(tag)}`;
             a.textContent = s.u ? tag.toUpperCase() : tag;
             a.title = `${count} kartpostal`;
 
-            a.style.fontFamily    = s.f;
-            a.style.fontWeight    = s.w;
-            a.style.fontStyle     = s.i ? 'italic' : 'normal';
-            a.style.fontSize      = fsize;
-            a.style.color         = isOutline ? 'transparent' : COLORS[styleIdx];
-            a.style.opacity       = (0.68 + logN * 0.32).toFixed(2);
+            a.style.fontFamily = s.f;
+            a.style.fontWeight = s.w;
+            a.style.fontStyle  = s.i ? 'italic' : 'normal';
+            a.style.fontSize   = fsize;
 
-            if (isOutline) {
-                const strokeW = Math.max(1.5, Math.min(3, parseFloat(fsize) * 0.55)).toFixed(1);
+            // Küçük etiket → beyaz (teal arka planda en iyi okunur)
+            // Büyük etiket → stile göre renk
+            if (smallTag) {
+                a.style.color   = '#ffffff';
+                a.style.opacity = (0.82 + logN * 0.18).toFixed(2); // min 0.82
+            } else if (useOutline) {
+                a.style.color   = 'transparent';
+                a.style.opacity = '1';
+                const strokeW = Math.max(1.8, Math.min(3.5, parseFloat(fsize) * 0.55)).toFixed(1);
                 a.style.webkitTextStroke = `${strokeW}px #0d3545`;
+            } else {
+                a.style.color   = COLORS[styleIdx];
+                a.style.opacity = (0.80 + logN * 0.20).toFixed(2); // min 0.80
             }
 
-            // Büyük kelimelere hafif gölge (derinlik)
-            if (logN > 0.65 && !isOutline) {
+            // Büyük kelimelere hafif derinlik gölgesi
+            if (logN > 0.65 && !useOutline) {
                 a.style.textShadow = '2px 3px 0 rgba(13,53,69,0.1), 4px 5px 0 rgba(13,53,69,0.05)';
             }
 
