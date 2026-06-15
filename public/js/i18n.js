@@ -179,6 +179,9 @@ const I18n = (function () {
         if (typeof Gallery !== 'undefined' && Gallery.refreshCountryFilter) {
             Gallery.refreshCountryFilter();
         }
+        if (typeof TagCloud !== 'undefined' && TagCloud.refresh) {
+            TagCloud.refresh();
+        }
     }
 
     function applyTranslations() {
@@ -206,6 +209,29 @@ const I18n = (function () {
         return CountryTranslator.translate(name, currentLang);
     }
 
+    // Etiket listesini aktif dile göre filtrele
+    function filterTagsByLang(tags) {
+        if (!Array.isArray(tags) || tags.length === 0) return tags;
+
+        function getTagLang(tag) {
+            if (/[一-鿿]/.test(tag)) return 'zh';
+            if (/[ğĞşŞıİüÜöÖçÇ]/.test(tag)) return 'tr';
+            if (typeof CountryTranslator !== 'undefined' && CountryTranslator.isTurkishWord(tag)) return 'tr';
+            return 'en';
+        }
+
+        const filtered = tags.filter(tag => {
+            const tl = getTagLang(tag);
+            if (currentLang === 'tr') return tl === 'tr';
+            if (currentLang === 'en') return tl === 'en';
+            if (currentLang === 'zh') return tl === 'zh' || tl === 'en';
+            return true;
+        });
+
+        // Filtreleme her şeyi silerse hepsini göster (dil karışıklığı için güvenli fallback)
+        return filtered.length > 0 ? filtered : tags;
+    }
+
     function getDescription(postcard) {
         // Supabase şeması: description + description_en
         return {
@@ -228,5 +254,5 @@ const I18n = (function () {
         });
     }
 
-    return { t, getLang, setLang, init, getDescription, applyTranslations, translateCountry };
+    return { t, getLang, setLang, init, getDescription, applyTranslations, translateCountry, filterTagsByLang };
 })();

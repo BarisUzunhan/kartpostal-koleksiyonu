@@ -43,7 +43,7 @@
     html += `<p class="detail-country">${escapeHtml(I18n.translateCountry(postcard.country))}</p>`;
 
     // Etiket rozetleri
-    const tags = postcard.tags || [];
+    const tags = I18n.filterTagsByLang(postcard.tags || []);
     if (tags.length) {
         html += `<div class="modal-tags detail-tags">`;
         for (const tag of tags) {

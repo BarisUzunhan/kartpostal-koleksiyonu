@@ -17,48 +17,67 @@
     font-family: 'Dosis', sans-serif;
     font-size: 2rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-surface);
     margin-bottom: 0.5rem;
+    text-shadow: 0 2px 8px rgba(31, 92, 108, 0.3);
 }
 
 .tags-desc {
-    color: var(--color-muted, #888);
+    color: rgba(255, 255, 255, 0.75);
     font-size: 0.95rem;
 }
 
-/* ── Kelime Bulutu ──────────────────────────── */
+/* ── Word Cloud ─────────────────────────── */
 .tag-cloud-container {
-    text-align: center;
-    line-height: 2.2;
-    padding: 1rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem 2.5rem;
+    line-height: 1;
 }
 
 .tag-cloud-word {
     display: inline-block;
-    color: var(--color-surface);
-    text-decoration: none;
     font-family: 'Dosis', sans-serif;
-    font-weight: 600;
-    margin: 0 0.35rem;
-    transition: color 0.2s, transform 0.15s, text-shadow 0.2s;
+    text-decoration: none;
     cursor: pointer;
-    text-shadow: 0 1px 3px rgba(31, 92, 108, 0.25);
+    white-space: nowrap;
+    transform: rotate(var(--rot, 0deg));
+    transform-origin: center center;
+    transition:
+        transform 0.2s ease,
+        text-shadow 0.2s ease,
+        opacity 0.15s ease;
 }
 
 .tag-cloud-word:hover {
-    color: var(--color-surface);
-    transform: scale(1.12);
-    text-shadow: 0 2px 8px rgba(31, 92, 108, 0.4);
-    text-decoration: underline;
+    transform: rotate(var(--rot, 0deg)) scale(1.14) !important;
+    text-shadow: 0 3px 14px rgba(31, 92, 108, 0.55) !important;
     opacity: 1 !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Dikey etiketler */
+.tag-cloud-word.tag-vertical {
+    writing-mode: vertical-rl;
+    transform: none;
+    line-height: 1.2;
+    align-self: center;
+}
+
+.tag-cloud-word.tag-vertical:hover {
+    transform: scale(1.12) !important;
 }
 
 /* ── İstatistik ──────────────────────────────── */
 .tag-stats {
     text-align: center;
-    margin-top: 2.5rem;
+    margin-top: 2rem;
     font-size: 0.85rem;
-    color: var(--color-muted, #aaa);
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.03em;
 }
 
 /* ── Aktif etiket chip (galeri sayfası) ────── */
@@ -93,7 +112,7 @@
 }
 .tag-chip-remove:hover { opacity: 1; }
 
-/* ── Modal etiket rozetleri ────────────────── */
+/* ── Modal / Detay etiket rozetleri ────────── */
 .modal-tags {
     display: flex;
     flex-wrap: wrap;
@@ -121,7 +140,7 @@
 
 /* ── Yükleniyor ─────────────────────────────── */
 .loading-state {
-    color: var(--color-muted, #aaa);
+    color: rgba(255, 255, 255, 0.7);
     font-size: 1rem;
     padding: 3rem;
     text-align: center;

@@ -188,6 +188,21 @@ const CountryTranslator = (function () {
         'Surinam': 'SR',
     };
 
+    // Türkçe özel harfi olmayan ama Türkçe olan kelimeler (şehir adları vb.)
+    const TR_WORDS_EXTRA = new Set([
+        // Şehir adları (Türkçe formu İngilizce'den farklı ama özel harf içermiyor)
+        'atina', 'roma', 'londra', 'venedik', 'floransa', 'viyana', 'prag',
+        'lizbon', 'marsilya', 'barselona', 'napoli', 'bratislava', 'varova',
+        'lahey', 'kopenhag', 'oslo', 'stokholm', 'helsinki',
+        // Yaygın Türkçe kelimeler (özel harf yok)
+        'tarihi', 'kale', 'ada', 'deniz', 'kilise', 'saray', 'camii', 'cami',
+        'liman', 'plaj', 'sahil', 'dag', 'orman', 'kent', 'koy', 'kasaba',
+        'tatil', 'seyahat', 'yolculuk', 'gezi', 'pazar', 'kentin',
+        'kapadokya', 'anadolu', 'trakya', 'akdeniz', 'karadeniz',
+        'tarihi kent', 'tarihi sehir', 'eski sehir', 'eski kent',
+        'pazar yeri', 'tarihi merkez',
+    ]);
+
     // Sonuç önbelleği — her dil+isim çifti bir kez hesaplanır
     const _cache = {};
 
@@ -221,5 +236,15 @@ const CountryTranslator = (function () {
         }
     }
 
-    return { translate };
+    // Bir kelimenin Türkçe etiket olup olmadığını kontrol et
+    function isTurkishWord(word) {
+        if (!word) return false;
+        // TR_TO_ISO'da anahtar olarak var mı? (özel harf içermeyen TR ülke adları)
+        if (TR_TO_ISO.hasOwnProperty(word)) return true;
+        // Ekstra Türkçe kelimeler listesi (büyük/küçük harf duyarsız)
+        if (TR_WORDS_EXTRA.has(word.toLowerCase())) return true;
+        return false;
+    }
+
+    return { translate, isTurkishWord };
 })();

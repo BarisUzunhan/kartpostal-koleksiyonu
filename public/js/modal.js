@@ -124,7 +124,7 @@ const Modal = (function () {
         const existing = document.getElementById('modal-tags');
         if (existing) existing.remove();
 
-        const tags = postcard.tags || [];
+        const tags = I18n.filterTagsByLang(postcard.tags || []);
         if (!tags.length) return;
 
         const tagsDiv = document.createElement('div');
