@@ -1,5 +1,6 @@
 /* ========================================
-   Etiket Bulutu Sayfası — Dil Filtresi + Görsel Word Cloud
+   Etiket Bulutu — Tipografik Word Cloud
+   Referans: çoklu font ailesi + baseline hizalama
    ======================================== */
 
 (async function () {
@@ -11,80 +12,56 @@
 
     let allPostcards = [];
 
-    // ── Deterministik pseudo-random (seed = etiket adı) ─────────────────────
+    // ── Deterministik hash (her etiket her zaman aynı stili alır) ───────────
     function strHash(s) {
         let h = 0;
         for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
         return Math.abs(h);
     }
 
-    function randRange(seed, min, max) {
-        return min + (strHash(seed) % 10000) / 10000 * (max - min);
-    }
-
-    // ── Frekans → görsel özellik eşlemeleri ─────────────────────────────────
-    function norm(count, min, max) {
-        return max === min ? 0.5 : (count - min) / (max - min);
-    }
-
-    function fontSize(n) {
-        // Log ölçeği: nadir → 0.82rem, çok yaygın → 3.4rem
-        return (0.82 + Math.pow(n, 0.55) * 2.58).toFixed(2) + 'rem';
-    }
-
-    function fontWeight(n) {
-        if (n > 0.88) return 800;
-        if (n > 0.70) return 700;
-        if (n > 0.50) return 600;
-        if (n > 0.30) return 500;
-        if (n > 0.12) return 400;
-        return 300;
-    }
-
-    function letterSpacing(weight) {
-        // İnce fontlar biraz geniş, kalın fontlar biraz dar
-        if (weight >= 700) return '-0.02em';
-        if (weight <= 300) return '0.06em';
-        return '0.01em';
-    }
-
-    // Renk paleti: teal arka plan üzerinde beyaz tonları + sıcak ton
-    const COLORS = [
-        '#ffffff',           // en yaygın → saf beyaz
-        '#f0f8ff',           // yüksek → soğuk beyaz
-        '#ffe8d6',           // orta-yüksek → sıcak krem
-        '#d4efdf',           // orta → soft yeşil-beyaz
-        'rgba(255,255,255,0.82)', // orta-düşük
-        'rgba(255,255,255,0.70)', // düşük
+    // ── Tipografi stilleri — referanstaki gibi karışık font karakteri ────────
+    // Her stil: font, weight, italic, uppercase, outline (hollow harf)
+    const STYLES = [
+        { f: "'Oswald', sans-serif",        w: 700, i: false, u: true,  o: false },  // 0  bold condensed caps
+        { f: "'Playfair Display', serif",   w: 700, i: true,  u: false, o: false },  // 1  bold italic serif
+        { f: "'Dosis', sans-serif",         w: 800, i: false, u: false, o: false },  // 2  geometric bold
+        { f: "'Oswald', sans-serif",        w: 200, i: false, u: true,  o: false },  // 3  thin condensed caps
+        { f: "'Caveat', cursive",           w: 700, i: false, u: false, o: false },  // 4  handwritten bold
+        { f: "'Playfair Display', serif",   w: 400, i: true,  u: false, o: false },  // 5  light italic serif
+        { f: "'Oswald', sans-serif",        w: 600, i: false, u: true,  o: true  },  // 6  outline/hollow caps
+        { f: "'Dosis', sans-serif",         w: 300, i: false, u: true,  o: false },  // 7  thin geometric caps
+        { f: "'Caveat', cursive",           w: 400, i: false, u: false, o: false },  // 8  handwritten light
+        { f: "'Oswald', sans-serif",        w: 500, i: false, u: false, o: false },  // 9  medium condensed
     ];
 
-    function tagColor(n, tag) {
-        const idx = Math.floor((1 - n) * (COLORS.length - 1));
-        // Renkleri biraz karıştır (deterministic)
-        const offset = strHash(tag + 'c') % 2;
-        return COLORS[Math.min(idx + offset, COLORS.length - 1)];
+    // Sitenin renk paletine uygun renkler (açık teal arka plan üzerinde)
+    const COLORS = [
+        '#0d3545',    // 0  koyu lacivert — maksimum kontrast
+        '#ffffff',    // 1  beyaz
+        '#1f5c6c',    // 2  sitenin koyu teal rengi
+        '#0a2535',    // 3  en koyu lacivert
+        '#0d3545',    // 4  koyu lacivert
+        '#fffde7',    // 5  sıcak krem
+        'transparent',// 6  outline için (renk yok, sadece stroke)
+        '#1f5c6c',    // 7  koyu teal
+        '#ffffff',    // 8  beyaz
+        '#0d3545',    // 9  koyu lacivert
+    ];
+
+    // ── Log-ölçeği boyut hesabı (word cloud için standart) ──────────────────
+    function logFontSize(count, minC, maxC) {
+        if (maxC === minC) return '1.8rem';
+        const logN = (Math.log(count) - Math.log(minC)) / (Math.log(maxC) - Math.log(minC));
+        const size = 0.78 + logN * 3.22;
+        return size.toFixed(2) + 'rem';
     }
 
-    function tagOpacity(n) {
-        return (0.62 + n * 0.38).toFixed(2);
-    }
-
-    // Döndürme açısı — büyük etiketler yatay, küçükler rastgele / dikey
-    function tagRotation(tag, fsize) {
-        const size = parseFloat(fsize);
-        if (size >= 2.4) return { deg: 0, vertical: false };
-        if (size >= 1.7) return { deg: randRange(tag + 'r', -7, 7), vertical: false };
-        if (size >= 1.15) return { deg: randRange(tag + 'r', -16, 16), vertical: false };
-        // Küçük etiketlerin %18'i dikey
-        if (strHash(tag + 'v') % 100 < 18) return { deg: 0, vertical: true };
-        return { deg: randRange(tag + 'r', -22, 22), vertical: false };
-    }
-
-    // Marjin varyasyonu — organik boşluk için
-    function tagMargin(tag) {
-        const mh = randRange(tag + 'mh', 0.25, 0.95);
-        const mv = randRange(tag + 'mv', 0.12, 0.55);
-        return `${mv.toFixed(2)}rem ${mh.toFixed(2)}rem`;
+    // Büyük harfler için biraz küçült (optik denge)
+    function adjustSize(rem, isUpper, isCaveat) {
+        const n = parseFloat(rem);
+        if (isUpper) return (n * 0.88).toFixed(2) + 'rem';
+        if (isCaveat) return (n * 1.15).toFixed(2) + 'rem'; // Caveat doğal küçük görünür
+        return rem;
     }
 
     // ── Etiket bulutunu oluştur ──────────────────────────────────────────────
@@ -95,9 +72,7 @@
         const tagCounts = {};
         for (const p of allPostcards) {
             const tags = I18n.filterTagsByLang(p.tags || []);
-            for (const t of tags) {
-                tagCounts[t] = (tagCounts[t] || 0) + 1;
-            }
+            for (const t of tags) tagCounts[t] = (tagCounts[t] || 0) + 1;
         }
 
         const entries = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
@@ -108,40 +83,49 @@
             return;
         }
 
-        const maxCount = entries[0][1];
-        const minCount = entries[entries.length - 1][1];
+        const maxC = entries[0][1];
+        const minC = entries[entries.length - 1][1];
+
+        // Çok büyük etiketlerin sırayla dizilmesini önlemek için hafif karıştır
+        const shuffled = [...entries];
+        for (let i = 3; i < shuffled.length; i++) {
+            const j = i + (strHash(shuffled[i][0]) % 5) - 2;
+            if (j >= 3 && j < shuffled.length) [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
 
         container.innerHTML = '';
 
-        // Hafif karıştırılmış sıra: çok büyük etiketlerin hepsi başa yığılmasın
-        const sorted = [...entries];
-        // Ortaları hafifçe karıştır, en büyükler dağıtsın
-        for (let i = 3; i < sorted.length - 1; i++) {
-            const j = i + Math.floor(strHash(sorted[i][0] + 'sh') % 3) - 1;
-            if (j > 2 && j < sorted.length) [sorted[i], sorted[j]] = [sorted[j], sorted[i]];
-        }
+        for (const [tag, count] of shuffled) {
+            const styleIdx = strHash(tag) % STYLES.length;
+            const s = STYLES[styleIdx];
+            const isOutline = s.o;
+            const isCaveat = s.f.includes('Caveat');
 
-        for (const [tag, count] of sorted) {
-            const n = norm(count, minCount, maxCount);
-            const fsize = fontSize(n);
-            const fw = fontWeight(n);
-            const { deg, vertical } = tagRotation(tag, fsize);
+            const baseSize = logFontSize(count, minC, maxC);
+            const fsize = adjustSize(baseSize, s.u, isCaveat);
+            const logN = (Math.log(count) - Math.log(minC)) / (Math.log(maxC) - Math.log(minC) || 1);
 
             const a = document.createElement('a');
-            a.className = 'tag-cloud-word' + (vertical ? ' tag-vertical' : '');
+            a.className = 'tag-cloud-word' + (isOutline ? ' tag-outline' : '');
             a.href = `index.html?tag=${encodeURIComponent(tag)}`;
-            a.textContent = tag;
+            a.textContent = s.u ? tag.toUpperCase() : tag;
             a.title = `${count} kartpostal`;
 
-            a.style.fontSize = fsize;
-            a.style.fontWeight = fw;
-            a.style.color = tagColor(n, tag);
-            a.style.opacity = tagOpacity(n);
-            a.style.letterSpacing = letterSpacing(fw);
-            a.style.margin = tagMargin(tag);
+            a.style.fontFamily    = s.f;
+            a.style.fontWeight    = s.w;
+            a.style.fontStyle     = s.i ? 'italic' : 'normal';
+            a.style.fontSize      = fsize;
+            a.style.color         = isOutline ? 'transparent' : COLORS[styleIdx];
+            a.style.opacity       = (0.68 + logN * 0.32).toFixed(2);
 
-            if (!vertical) {
-                a.style.setProperty('--rot', `${deg.toFixed(1)}deg`);
+            if (isOutline) {
+                const strokeW = Math.max(1.5, Math.min(3, parseFloat(fsize) * 0.55)).toFixed(1);
+                a.style.webkitTextStroke = `${strokeW}px #0d3545`;
+            }
+
+            // Büyük kelimelere hafif gölge (derinlik)
+            if (logN > 0.65 && !isOutline) {
+                a.style.textShadow = '2px 3px 0 rgba(13,53,69,0.1), 4px 5px 0 rgba(13,53,69,0.05)';
             }
 
             container.appendChild(a);
@@ -160,6 +144,5 @@
 
     await buildTagCloud();
 
-    // Dil değişince yeniden oluştur
     window.TagCloud = { refresh: buildTagCloud };
 })();
