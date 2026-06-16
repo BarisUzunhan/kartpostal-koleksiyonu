@@ -100,17 +100,39 @@ function parseValueBlock(block) {
 }
 
 // ── Görsel yardımcıları ───────────────────────────────────────────────────────
+/**
+ * Post HTML içeriğinden sıralı, tam-boyutlu görsel yollarını çıkarır.
+ *
+ * Gutenberg blokları orijinali <a href> içinde, küçültülmüş türevi <img src>
+ * içinde saklar. Önce href'leri okuyup basename'e indirger; src'leri sadece
+ * href'te görünmeyen görseller için ekler. Boyut son-eki (-1024x688) elemine
+ * gerek kalmadan normalize edilir.
+ */
 function extractImgRels(htmlContent) {
     if (!htmlContent) return [];
-    const pattern = /src=["']https?:\/\/[^"']*\/wp-content\/uploads\/([^"']+)["']/gi;
-    const found = [];
+    const out   = [];
+    const bases = new Set();   // tekrar kontrolü için basename'ler
+
+    const push = rel => {
+        if (!rel) return;
+        // -1024x688 gibi türev son-ekini soy → orijinal dosya adını bul
+        const norm = rel.replace(/-\d+x\d+(\.(jpe?g|png|gif|webp))$/i, '$1');
+        const base = path.basename(norm).toLowerCase();
+        if (bases.has(base)) return;
+        bases.add(base);
+        out.push(norm);
+    };
+
+    // 1) <a href> orijinalleri (Gutenberg media link) — ön/arka sırasını korur
+    const hrefPat = /href=["']https?:\/\/[^"']*\/wp-content\/uploads\/([^"']+\.(?:jpe?g|png|gif|webp))["']/gi;
     let m;
-    while ((m = pattern.exec(htmlContent)) !== null) {
-        const rel = m[1];
-        if (/-\d+x\d+\.(jpg|jpeg|png)$/i.test(rel)) continue;
-        if (!found.includes(rel)) found.push(rel);
-    }
-    return found;
+    while ((m = hrefPat.exec(htmlContent)) !== null) push(m[1]);
+
+    // 2) <img src> — href'te yer almayan klasik görseller için (eski postlar)
+    const srcPat = /src=["']https?:\/\/[^"']*\/wp-content\/uploads\/([^"']+)["']/gi;
+    while ((m = srcPat.exec(htmlContent)) !== null) push(m[1]);
+
+    return out;
 }
 
 // `something_on.jpg` → `something_arka.jpg` dönüşümü
@@ -254,47 +276,62 @@ async function main() {
         let arkaLocalPath = null;
         let strategy = '';
 
-        // ── Strateji 1: content içinde _arka URL ────────────────────────────
         const contentRels = extractImgRels(postContent);
-        const arkaRels = contentRels.filter(r => /_arka/i.test(r));
-        if (arkaRels.length > 0) {
-            arkaLocalPath = resolveLocal(arkaRels[0]);
-            strategy = 'S1:content_arka';
+
+        // ── Ön yüz baseline: thumbnail ya da içerikteki ilk görsel ──────────
+        let frontBase = null;
+        if (thumbIds.length > 0 && attachPath[thumbIds[0]]) {
+            frontBase = path.basename(attachPath[thumbIds[0]]).toLowerCase();
+        } else if (contentRels.length > 0) {
+            frontBase = path.basename(contentRels[0]).toLowerCase();
         }
 
-        // ── Strateji 2: thumbnail _on.jpg → _arka.jpg ───────────────────────
+        // ── Strateji A: içerikteki ön'den farklı ilk görsel → arka yüz ──────
+        // Bu, Gutenberg (keyfi isimli) ve eski içeriklerin ikisini de yakalar.
+        if (contentRels.length > 0) {
+            for (const rel of contentRels) {
+                const base = path.basename(rel).toLowerCase();
+                if (frontBase && base === frontBase) continue;  // ön yüzü atla
+                const local = resolveLocal(rel) || resolveLocalFuzzy(path.basename(rel));
+                if (local) { arkaLocalPath = local; strategy = 'A:content_2nd'; break; }
+            }
+        }
+
+        // ── Strateji B: content içinde açık _arka URL (yedek/eski postlar) ──
+        if (!arkaLocalPath) {
+            const arkaRels = contentRels.filter(r => /_arka/i.test(r));
+            if (arkaRels.length > 0) {
+                arkaLocalPath = resolveLocal(arkaRels[0])
+                             || resolveLocalFuzzy(path.basename(arkaRels[0]));
+                if (arkaLocalPath) strategy = 'B:content_arka';
+            }
+        }
+
+        // ── Strateji C: thumbnail _on.jpg → _arka.jpg (eski adlandırma) ─────
         if (!arkaLocalPath && thumbIds.length > 0) {
             const thumbRel = attachPath[thumbIds[0]];
             if (thumbRel && /_on\./i.test(thumbRel)) {
                 const arkaRel = onToArka(thumbRel);
-                arkaLocalPath = resolveLocal(arkaRel);
-                if (!arkaLocalPath) {
-                    // Farklı yıl/ay klasöründe olabilir
-                    arkaLocalPath = resolveLocalFuzzy(path.basename(arkaRel));
-                }
-                if (arkaLocalPath) strategy = 'S2:thumb_on→arka';
+                arkaLocalPath = resolveLocal(arkaRel)
+                             || resolveLocalFuzzy(path.basename(arkaRel));
+                if (arkaLocalPath) strategy = 'C:thumb_on→arka';
             }
-            // thumbnail _thumb.jpg → _arka.jpg
             if (!arkaLocalPath && thumbRel && /_thumb\./i.test(thumbRel)) {
                 const arkaRel = thumbToArka(thumbRel);
-                arkaLocalPath = resolveLocal(arkaRel);
-                if (!arkaLocalPath) {
-                    arkaLocalPath = resolveLocalFuzzy(path.basename(arkaRel));
-                }
-                if (arkaLocalPath) strategy = 'S2:thumb_thumb→arka';
+                arkaLocalPath = resolveLocal(arkaRel)
+                             || resolveLocalFuzzy(path.basename(arkaRel));
+                if (arkaLocalPath) strategy = 'C:thumb_thumb→arka';
             }
         }
 
-        // ── Strateji 3: content içinde _on.jpg → _arka.jpg ─────────────────
+        // ── Strateji D: content _on.jpg → _arka.jpg (eski adlandırma) ───────
         if (!arkaLocalPath) {
             const onRels = contentRels.filter(r => /_on\./i.test(r));
             for (const onRel of onRels) {
                 const arkaRel = onToArka(onRel);
-                arkaLocalPath = resolveLocal(arkaRel);
-                if (!arkaLocalPath) {
-                    arkaLocalPath = resolveLocalFuzzy(path.basename(arkaRel));
-                }
-                if (arkaLocalPath) { strategy = 'S3:content_on→arka'; break; }
+                arkaLocalPath = resolveLocal(arkaRel)
+                             || resolveLocalFuzzy(path.basename(arkaRel));
+                if (arkaLocalPath) { strategy = 'D:content_on→arka'; break; }
             }
         }
 
@@ -305,7 +342,9 @@ async function main() {
         matches.push({ wpId, postSlug, arkaFile, arkaLocalPath, strategy });
 
         if (DRY_RUN) {
-            console.log(`  📸  Post ${wpId} (${postSlug}) [${strategy}] → ${arkaFile}`);
+            const frontLabel = frontBase || '(bilinmiyor)';
+            const arkaLabel  = path.basename(arkaLocalPath);
+            console.log(`  📸  Post ${wpId} (${postSlug}) [${strategy}]  ön:${frontLabel}  arka:${arkaLabel}`);
             continue;
         }
 
