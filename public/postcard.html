@@ -38,22 +38,73 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Görseller alt alta */
+        /* Görseller yan yana (ön + arka) */
         .detail-images {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            flex-direction: row;
+            gap: 0.35rem;
             width: 100%;
             background: var(--color-bg-alt);
             padding: 0;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
         }
 
         .detail-images .detail-image {
-            width: 100%;
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 50%;
             height: auto;
-            max-height: 65vh;
+            max-height: 60vh;
             object-fit: contain;
             display: block;
+            cursor: zoom-in;
+            transition: opacity 0.15s;
+        }
+
+        /* Tek görsel → ortalı, tam genişlik */
+        .detail-images .detail-image:only-child {
+            max-width: 100%;
+            flex: 0 1 auto;
+        }
+
+        .detail-images .detail-image:hover {
+            opacity: 0.92;
+        }
+
+        /* Ekstra görseller grid */
+        .detail-extra-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .detail-extra-grid img {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            cursor: zoom-in;
+            transition: opacity 0.15s;
+        }
+
+        .detail-extra-grid img:hover {
+            opacity: 0.85;
+        }
+
+        @media (max-width: 640px) {
+            .detail-images {
+                flex-direction: column;
+            }
+            .detail-images .detail-image {
+                max-width: 100%;
+                max-height: 45vh;
+            }
+            .detail-images .detail-image:only-child {
+                max-height: 55vh;
+            }
         }
 
         .detail-info {
@@ -260,6 +311,7 @@
     <script src="js/countries.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/zoom.js"></script>
     <script src="js/postcard-page.js"></script>
 </body>
 </html>

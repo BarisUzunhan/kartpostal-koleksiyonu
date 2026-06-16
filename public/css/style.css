@@ -368,80 +368,61 @@ body {
     flex-direction: column;
 }
 
-/* Çift görsel navigasyonu */
-.modal-image-carousel {
-    position: relative;
+/* Ön + arka yüz yan yana */
+.modal-images {
+    display: flex;
+    flex-direction: row;
+    gap: 0.35rem;
     width: 100%;
     background: var(--color-bg-alt);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     overflow: hidden;
-    min-height: 280px;
-    display: flex;
+    min-height: 200px;
     align-items: center;
     justify-content: center;
 }
 
-.modal-image-carousel img {
-    width: 100%;
+.modal-images img {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 50%;
     height: auto;
-    max-height: 55vh;
+    max-height: 50vh;
     object-fit: contain;
-    display: none;
-}
-
-.modal-image-carousel img.active-slide {
     display: block;
+    cursor: zoom-in;
+    transition: opacity 0.15s;
 }
 
-.img-nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255,255,255,0.85);
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: 1.1rem;
-    color: var(--color-text);
-    cursor: pointer;
-    display: flex;
+/* Tek görsel (arka yüz yok) → ortalı, tam genişlik */
+.modal-images img:only-child {
+    max-width: 100%;
+    flex: 0 1 auto;
+}
+
+.modal-images img:hover {
+    opacity: 0.92;
+}
+
+/* Ekstra görseller butonu */
+.modal-extra-btn {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    transition: all var(--transition);
-    z-index: 5;
-}
-
-.img-nav-btn:hover {
-    background: #fff;
-    box-shadow: var(--shadow-sm);
-}
-
-.img-nav-prev { left: 10px; }
-.img-nav-next { right: 10px; }
-
-.img-dots {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
     gap: 6px;
-    z-index: 5;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-surface);
+    background: var(--color-accent, #7a9a8a);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+    transition: all var(--transition);
 }
-
-.img-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.5);
-    border: none;
-    cursor: pointer;
-    transition: background var(--transition);
-}
-
-.img-dot.active {
-    background: #fff;
+.modal-extra-btn:hover {
+    opacity: 0.85;
+    text-decoration: none;
 }
 
 .modal-info {
@@ -641,8 +622,18 @@ body {
         height: 100%;
     }
 
-    .modal-image-carousel {
+    .modal-images {
+        flex-direction: column;
         border-radius: 0;
+    }
+
+    .modal-images img {
+        max-width: 100%;
+        max-height: 35vh;
+    }
+
+    .modal-images img:only-child {
+        max-height: 45vh;
     }
 
     .modal-card-prev {
@@ -689,4 +680,69 @@ body {
         flex-wrap: wrap;
         justify-content: center;
     }
+}
+
+/* ── ImageZoom overlay ─────────────────────────────────────────────────────── */
+.zoom-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.92);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: none;
+}
+
+.zoom-overlay.open {
+    display: flex;
+}
+
+.zoom-img {
+    max-width: 90vw;
+    max-height: 90vh;
+    object-fit: contain;
+    transform-origin: center center;
+    transition: transform 0.05s linear;
+    will-change: transform;
+    cursor: zoom-out;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.zoom-close {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    z-index: 10000;
+}
+
+.zoom-close:hover {
+    background: rgba(255,255,255,0.28);
+}
+
+.zoom-hint {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,255,255,0.45);
+    font-size: 0.75rem;
+    font-family: var(--font-body, sans-serif);
+    pointer-events: none;
+    white-space: nowrap;
 }

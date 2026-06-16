@@ -96,15 +96,9 @@
         <div class="modal-content">
             <button class="modal-close" id="modal-close" title="Kapat">&times;</button>
             <div class="modal-body">
-                <div class="modal-image-carousel" id="modal-carousel">
-                    <img id="modal-img-front" class="active-slide" src="" alt="">
-                    <img id="modal-img-back" src="" alt="">
-                    <button class="img-nav-btn img-nav-prev" id="img-prev">&#8249;</button>
-                    <button class="img-nav-btn img-nav-next" id="img-next">&#8250;</button>
-                    <div class="img-dots" id="img-dots">
-                        <button class="img-dot active" data-index="0"></button>
-                        <button class="img-dot" data-index="1"></button>
-                    </div>
+                <div class="modal-images" id="modal-images">
+                    <img id="modal-img-front" src="" alt="">
+                    <img id="modal-img-back" src="" alt="" style="display:none;">
                 </div>
                 <div class="modal-info">
                     <h2 id="modal-city" class="modal-city"></h2>
@@ -112,6 +106,9 @@
                     <p id="modal-description" class="modal-description"></p>
                     <p id="modal-description-2" class="modal-description modal-description-secondary" style="display:none;"></p>
                     <p id="modal-translation-note" class="translation-note" style="display:none;"></p>
+                    <a id="modal-extra-btn" href="#" class="modal-extra-btn" style="display:none;">
+                        🖼 <span data-i18n="hasMoreImages">Bu sayfa başka görseller de içermektedir</span>
+                    </a>
                     <a id="modal-open-page" href="#" target="_blank" class="modal-open-btn">
                         <span data-i18n="openNewTab">Yeni sekmede ac</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,6 +135,7 @@
     <script src="js/countries.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/zoom.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/gallery.js"></script>
     <script src="js/map.js"></script>

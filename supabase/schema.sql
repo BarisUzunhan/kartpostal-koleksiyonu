@@ -26,6 +26,8 @@ create table if not exists postcards (
     image_back            text,                    -- Supabase Storage optimize URL (varsa)
     image_front_original  text,                    -- Supabase Storage orijinal URL
     image_back_original   text,                    -- Supabase Storage orijinal URL (varsa)
+    extra_images          text[] default '{}',     -- Supabase Storage optimize URL'leri (3+ görsel)
+    extra_images_original text[] default '{}',     -- Supabase Storage orijinal URL'leri (3+ görsel)
     needs_review          boolean default false,   -- editör düzeltmesi gerekiyor mu
     review_reasons        text[] default '{}',     -- neden (ör. 'multi_postcard', 'no_coords')
     created_at            timestamptz default now(),
@@ -110,3 +112,10 @@ create policy "Authenticated image delete"
     on storage.objects for delete
     to authenticated
     using (bucket_id = 'postcards');
+
+-- ============================================================
+-- Sonradan eklenen kolonlar (mevcut DB için ALTER TABLE kullan)
+-- Yeni kurulumda CREATE TABLE bloğu zaten içeriyor.
+-- ============================================================
+alter table postcards add column if not exists extra_images          text[] default '{}';
+alter table postcards add column if not exists extra_images_original text[] default '{}';

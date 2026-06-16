@@ -56,7 +56,10 @@ const I18n = (function () {
             reviewReasonNoCountry: 'Ulke tespit edilemedi',
             savingChanges: 'Kaydediliyor...',
             saveSuccess: 'Kaydedildi!',
-            saveError: 'Kaydetme hatasi'
+            saveError: 'Kaydetme hatasi',
+            hasMoreImages: 'Bu sayfa başka görseller de içermektedir',
+            otherImages: 'Diğer görseller',
+            clickToZoom: 'Büyütmek için tıklayın'
         },
         en: {
             siteTitle: 'Colors of Other Lands',
@@ -106,7 +109,10 @@ const I18n = (function () {
             reviewReasonNoCountry: 'Country not detected',
             savingChanges: 'Saving...',
             saveSuccess: 'Saved!',
-            saveError: 'Save error'
+            saveError: 'Save error',
+            hasMoreImages: 'This page contains more images',
+            otherImages: 'Other images',
+            clickToZoom: 'Click to zoom'
         },
         zh: {
             siteTitle: '\u5f02\u57df\u4e4b\u8272',
@@ -156,7 +162,10 @@ const I18n = (function () {
             reviewReasonNoCountry: '\u672a\u68c0\u6d4b\u5230\u56fd\u5bb6',
             savingChanges: '\u4fdd\u5b58\u4e2d...',
             saveSuccess: '\u5df2\u4fdd\u5b58\uff01',
-            saveError: '\u4fdd\u5b58\u9519\u8bef'
+            saveError: '\u4fdd\u5b58\u9519\u8bef',
+            hasMoreImages: '\u672c\u9875\u8fd8\u6709\u66f4\u591a\u56fe\u7247',
+            otherImages: '\u5176\u4ed6\u56fe\u7247',
+            clickToZoom: '\u70b9\u51fb\u653e\u5927'
         }
     };
 
