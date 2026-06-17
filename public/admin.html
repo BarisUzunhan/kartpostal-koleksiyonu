@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
@@ -129,6 +130,11 @@
 
                     <div class="form-field">
                         <label>Konum (Haritadan secin veya koordinatlari girin) *</label>
+                        <div class="map-search-row">
+                            <input type="text" id="map-search-input" class="map-search-input" placeholder="Şehir ara... (ör. Paris, Tokyo, İstanbul)">
+                            <button type="button" id="map-search-btn" class="btn btn-secondary">Ara</button>
+                        </div>
+                        <div id="map-search-results" class="map-search-results" style="display:none;"></div>
                         <div id="admin-map" class="admin-map"></div>
                         <div class="form-row coord-row">
                             <div class="form-field">
@@ -179,9 +185,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
     <script src="js/supabaseClient.js"></script>
+    <script src="js/countries.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/map-base.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/admin.js"></script>
 </body>

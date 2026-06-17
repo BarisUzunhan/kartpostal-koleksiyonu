@@ -84,10 +84,14 @@
     // ── Admin Haritası ───────────────────────────────────────────────────
     function initAdminMap() {
         if (adminMap) return;
-        adminMap = L.map('admin-map').setView([39.9, 32.8], 3);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap', maxZoom: 18
-        }).addTo(adminMap);
+        adminMap = L.map('admin-map', { minZoom: 2, maxZoom: 19 }).setView([39.9, 32.8], 3);
+        if (typeof MapBase !== 'undefined') {
+            MapBase.addBaseLayer(adminMap);
+        } else {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap', maxZoom: 18
+            }).addTo(adminMap);
+        }
         adminMap.on('click', (e) => setMapMarker(e.latlng.lat, e.latlng.lng));
         setTimeout(() => adminMap.invalidateSize(), 200);
     }
@@ -107,6 +111,61 @@
         const lng = parseFloat(document.getElementById('form-lng').value);
         if (!isNaN(lat) && !isNaN(lng)) { setMapMarker(lat, lng); adminMap.setView([lat, lng], 8); }
     }
+
+    // ── Konum Arama (Nominatim) ──────────────────────────────────────────
+    const mapSearchInput   = document.getElementById('map-search-input');
+    const mapSearchBtn     = document.getElementById('map-search-btn');
+    const mapSearchResults = document.getElementById('map-search-results');
+
+    async function searchLocation() {
+        const query = mapSearchInput.value.trim();
+        if (!query) return;
+        mapSearchBtn.disabled = true;
+        mapSearchBtn.textContent = '...';
+        mapSearchResults.style.display = 'none';
+        mapSearchResults.innerHTML = '';
+        try {
+            const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=6&addressdetails=1`;
+            const res = await fetch(url, { headers: { 'Accept-Language': 'tr,en' } });
+            const items = await res.json();
+            if (!items.length) {
+                mapSearchResults.innerHTML = '<div class="map-search-no-result">Sonuç bulunamadı.</div>';
+                mapSearchResults.style.display = 'block';
+                return;
+            }
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'map-search-result-item';
+                div.textContent = item.display_name;
+                div.addEventListener('click', () => {
+                    const lat = parseFloat(item.lat);
+                    const lng = parseFloat(item.lon);
+                    setMapMarker(lat, lng);
+                    adminMap.setView([lat, lng], 10);
+                    mapSearchResults.style.display = 'none';
+                    mapSearchInput.value = '';
+                });
+                mapSearchResults.appendChild(div);
+            });
+            mapSearchResults.style.display = 'block';
+        } catch (err) {
+            mapSearchResults.innerHTML = '<div class="map-search-no-result">Arama hatası, tekrar deneyin.</div>';
+            mapSearchResults.style.display = 'block';
+        } finally {
+            mapSearchBtn.disabled = false;
+            mapSearchBtn.textContent = 'Ara';
+        }
+    }
+
+    mapSearchBtn.addEventListener('click', searchLocation);
+    mapSearchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchLocation(); } });
+
+    // Dışarı tıklayınca sonuçları kapat
+    document.addEventListener('click', (e) => {
+        if (!mapSearchResults.contains(e.target) && e.target !== mapSearchInput && e.target !== mapSearchBtn) {
+            mapSearchResults.style.display = 'none';
+        }
+    });
 
     // ── Etiket alanı ─────────────────────────────────────────────────────
     function setupTagInput() {
