@@ -114,9 +114,12 @@ function extractImgRels(htmlContent) {
     const push = rel => {
         if (!rel) return;
         const norm = rel.replace(/-\d+x\d+(\.(jpe?g|png|gif|webp))$/i, '$1');
-        const base = path.basename(norm).toLowerCase();
-        if (bases.has(base)) return;
-        bases.add(base);
+        // Dedup anahtarı: -scaled son-ekini de soy (WordPress büyük görsel kopyası)
+        const key  = path.basename(norm)
+                         .replace(/-scaled(\.(jpe?g|png|gif|webp))$/i, '$1')
+                         .toLowerCase();
+        if (bases.has(key)) return;
+        bases.add(key);
         out.push(norm);
     };
 
@@ -240,7 +243,22 @@ async function main() {
         const contentRels = extractImgRels(postContent);
         // İlk 2 görsel = front + back; geri kalanlar = extra
         const extraRels = contentRels.slice(2);
-        if (extraRels.length === 0) continue;
+        if (extraRels.length === 0) {
+            // Daha önce yanlış yüklenmiş sahte ekstralar varsa temizle
+            if (!DRY_RUN && supabase) {
+                const ex = existingMap[wpId];
+                if (ex && ex.extra_images && ex.extra_images.length > 0) {
+                    const { error } = await supabase.from('postcards')
+                        .update({ extra_images: [], extra_images_original: [] })
+                        .eq('wp_post_id', wpId);
+                    if (!error) {
+                        console.log(`  🧹  ${ex.city || postSlug} (${wpId}) — sahte ekstralar temizlendi`);
+                        stats.cleared = (stats.cleared || 0) + 1;
+                    }
+                }
+            }
+            continue;
+        }
 
         stats.found++;
         stats.totalExtras += extraRels.length;
@@ -323,6 +341,7 @@ async function main() {
         console.log('    Yüklemek için: node scripts/migrate-extra-images.mjs');
     } else {
         console.log(`  Zaten dolu (atlandı)   : ${stats.skipped}`);
+        console.log(`  Temizlenen post        : ${stats.cleared || 0}`);
         console.log(`  Güncellenen post       : ${stats.uploaded}`);
         console.log(`  Yüklenen ekstra görsel : ${stats.uploadedExtras}`);
         console.log(`  Hata                   : ${stats.error}`);
