@@ -1,5 +1,5 @@
 /* ========================================
-   Editör — Gözden Geçirilmeli Kayıtlar
+   Editör — Tüm Kartpostallar + Sebep Filtresi
    Supabase Auth korumalı; kalıcı düzeltme.
    ======================================== */
 
@@ -7,20 +7,19 @@
     I18n.init();
 
     const loginSection = document.getElementById('login-section');
-    const editorPanel = document.getElementById('editor-panel');
-    const logoutBtn = document.getElementById('logout-btn');
-    const loginForm = document.getElementById('login-form');
-    const loginError = document.getElementById('login-error');
-    const editorList = document.getElementById('editor-list');
-    const editorCount = document.getElementById('editor-count');
-    const filterView = document.getElementById('filter-view');
+    const editorPanel  = document.getElementById('editor-panel');
+    const logoutBtn    = document.getElementById('logout-btn');
+    const loginForm    = document.getElementById('login-form');
+    const loginError   = document.getElementById('login-error');
+    const editorList   = document.getElementById('editor-list');
+    const editorCount  = document.getElementById('editor-count');
     const filterReason = document.getElementById('filter-reason');
     const editorSearch = document.getElementById('editor-search');
 
     let allPostcards = [];
-    let editingTags = [];
-    let editingId = null;
-    let frontFile = null, backFile = null;
+    let editingTags  = [];
+    let editingId    = null;
+    let frontFile    = null, backFile = null;
 
     // ── Auth ────────────────────────────────────────────────────────────
     const session = await Auth.getSession();
@@ -33,50 +32,125 @@
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
+        const email    = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        const result = await Auth.login(email, password);
-        if (result.success) { loginError.style.display = 'none'; await showEditor(); }
-        else { loginError.style.display = 'block'; loginError.textContent = result.message || 'Hatalı giriş.'; }
+        const result   = await Auth.login(email, password);
+        if (result.success) {
+            loginError.style.display = 'none';
+            await showEditor();
+        } else {
+            loginError.style.display = 'block';
+            loginError.textContent = result.message || 'Hatalı giriş.';
+        }
     });
 
     logoutBtn.addEventListener('click', async () => { await Auth.logout(); showLogin(); });
 
     function showLogin() {
         loginSection.style.display = 'flex';
-        editorPanel.style.display = 'none';
-        logoutBtn.style.display = 'none';
+        editorPanel.style.display  = 'none';
+        logoutBtn.style.display    = 'none';
     }
 
     async function showEditor() {
         loginSection.style.display = 'none';
-        editorPanel.style.display = 'block';
-        logoutBtn.style.display = 'inline-flex';
+        editorPanel.style.display  = 'block';
+        logoutBtn.style.display    = 'inline-flex';
         allPostcards = await PostcardData.getAll();
+        buildReasonOptions();
         renderList();
     }
 
-    // ── Filtre & liste ──────────────────────────────────────────────────
-    filterView.addEventListener('change', renderList);
+    // ── Dinamik Sebep Menüsü ────────────────────────────────────────────
+    // Sıralı sebep tanımları (veride görünmeyen sebepler sayı=0 ile atlanır)
+    const REASON_ORDER = [
+        { value: 'ambiguous_country', label: 'Ülke belirsiz' },
+        { value: 'no_country',        label: 'Ülke yok' },
+        { value: 'no_coords',         label: 'Koordinat yok' },
+        { value: 'multi_image',       label: 'Çok görsel' },
+        { value: 'no_text',           label: 'Metin yok' },
+        { value: 'no_image',          label: 'Görsel yok' },
+    ];
+
+    function buildReasonOptions() {
+        // Sayıları canlı veriden hesapla
+        const total    = allPostcards.length;
+        const nReview  = allPostcards.filter(p => p.needs_review).length;
+        const nClean   = total - nReview;
+
+        // Her sebep için sayı
+        const reasonCounts = {};
+        allPostcards.forEach(p => {
+            (p.review_reasons || []).forEach(r => {
+                reasonCounts[r] = (reasonCounts[r] || 0) + 1;
+            });
+        });
+
+        // Mevcut seçimi koru
+        const prevVal = filterReason.value;
+        filterReason.innerHTML = '';
+
+        function addOpt(value, text) {
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = text;
+            filterReason.appendChild(opt);
+        }
+
+        addOpt('all',        `Tüm kartpostallar (${total})`);
+        addOpt('__review__', `Sorunlu — Tümü (${nReview})`);
+
+        REASON_ORDER.forEach(({ value, label }) => {
+            const cnt = reasonCounts[value] || 0;
+            if (cnt > 0) addOpt(value, `${label} (${cnt})`);
+        });
+
+        addOpt('__clean__', `Sorunsuz (${nClean})`);
+
+        // Seçimi geri yükle (yoksa 'all' kalır)
+        if (prevVal && [...filterReason.options].some(o => o.value === prevVal)) {
+            filterReason.value = prevVal;
+        } else {
+            filterReason.value = 'all';
+        }
+    }
+
+    // ── Filtre & Liste ───────────────────────────────────────────────────
     filterReason.addEventListener('change', renderList);
     let debounce;
-    editorSearch.addEventListener('input', () => { clearTimeout(debounce); debounce = setTimeout(renderList, 250); });
+    editorSearch.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(renderList, 250);
+    });
 
     function renderList() {
         let postcards = [...allPostcards];
-        const view = filterView.value;
-        const reason = filterReason.value;
-        const search = editorSearch.value.toLowerCase().trim();
+        const reason  = filterReason.value;
+        const search  = editorSearch.value.toLowerCase().trim();
 
-        if (view === 'review') postcards = postcards.filter(p => p.needs_review);
-        if (reason) postcards = postcards.filter(p => Array.isArray(p.review_reasons) && p.review_reasons.includes(reason));
-        if (search) postcards = postcards.filter(p =>
-            (p.city || '').toLowerCase().includes(search) ||
-            (p.country || '').toLowerCase().includes(search)
-        );
+        // Sebep filtresi
+        if (reason === 'all') {
+            // tümü — filtre yok
+        } else if (reason === '__review__') {
+            postcards = postcards.filter(p => p.needs_review);
+        } else if (reason === '__clean__') {
+            postcards = postcards.filter(p => !p.needs_review);
+        } else {
+            postcards = postcards.filter(p =>
+                Array.isArray(p.review_reasons) && p.review_reasons.includes(reason)
+            );
+        }
+
+        // Metin arama
+        if (search) {
+            postcards = postcards.filter(p =>
+                (p.city    || '').toLowerCase().includes(search) ||
+                (p.country || '').toLowerCase().includes(search)
+            );
+        }
 
         editorCount.textContent = `${postcards.length} kayıt`;
-        editorList.innerHTML = '';
+        editorList.innerHTML    = '';
 
         if (!postcards.length) {
             editorList.innerHTML = '<p class="no-results-title" style="padding:2rem;text-align:center;">Kayıt bulunamadı.</p>';
@@ -84,14 +158,16 @@
         }
 
         postcards.forEach(pc => {
-            const row = document.createElement('div');
+            const row    = document.createElement('div');
             row.className = `editor-row${pc.needs_review ? ' needs-review' : ''}`;
-            const imgSrc = pc.image_front || pc.imageFront || '';
+            const imgSrc  = pc.image_front || pc.imageFront || '';
             const reasons = (pc.review_reasons || []).map(r => reasonLabel(r)).join(', ');
 
             row.innerHTML = `
                 <div class="editor-row-img">
-                    ${imgSrc ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(pc.city)}" onerror="this.style.display='none'">` : '<div class="no-img-placeholder">?</div>'}
+                    ${imgSrc
+                        ? `<img src="${escapeHtml(imgSrc)}" alt="${escapeHtml(pc.city)}" onerror="this.style.display='none'">`
+                        : '<div class="no-img-placeholder">?</div>'}
                 </div>
                 <div class="editor-row-info">
                     <strong class="editor-row-title">${escapeHtml(pc.city)}, ${escapeHtml(pc.country)}</strong>
@@ -110,48 +186,54 @@
 
     function reasonLabel(r) {
         const map = {
-            no_coords: 'Koordinat yok', no_image: 'Görsel yok',
-            multi_postcard: 'Çok kartpostal', front_back_ambiguous: 'Ön/arka belirsiz',
-            no_country: 'Ülke yok', country_mismatch: 'Ülke çakışması',
-            no_text: 'Metin yok', ambiguous_country: 'Ülke belirsiz'
+            no_coords:            'Koordinat yok',
+            no_image:             'Görsel yok',
+            multi_image:          'Çok görsel',
+            multi_postcard:       'Çok kartpostal',
+            front_back_ambiguous: 'Ön/arka belirsiz',
+            no_country:           'Ülke yok',
+            country_mismatch:     'Ülke çakışması',
+            ambiguous_country:    'Ülke belirsiz',
+            no_text:              'Metin yok',
         };
         return map[r] || r;
     }
 
-    // ── Düzenleme modal ──────────────────────────────────────────────────
-    const editModal = document.getElementById('edit-modal');
+    // ── Düzenleme Modal ──────────────────────────────────────────────────
+    const editModal      = document.getElementById('edit-modal');
     const editModalClose = document.getElementById('edit-modal-close');
-    const editCancelBtn = document.getElementById('edit-cancel-btn');
-    const editSaveBtn = document.getElementById('edit-save-btn');
+    const editCancelBtn  = document.getElementById('edit-cancel-btn');
+    const editSaveBtn    = document.getElementById('edit-save-btn');
     const editSaveStatus = document.getElementById('edit-save-status');
-    const editTagsInput = document.getElementById('edit-tags-input');
-    const editTagsChips = document.getElementById('edit-tags-chips');
+    const editTagsInput  = document.getElementById('edit-tags-input');
+    const editTagsChips  = document.getElementById('edit-tags-chips');
 
     editModalClose.addEventListener('click', closeModal);
     editCancelBtn.addEventListener('click', closeModal);
     editModal.addEventListener('click', (e) => { if (e.target === editModal) closeModal(); });
 
     function openEditModal(pc) {
-        editingId = pc.id;
+        editingId   = pc.id;
         editingTags = [...(pc.tags || [])];
-        frontFile = null; backFile = null;
+        frontFile   = null; backFile = null;
 
         document.getElementById('edit-modal-title').textContent = `${pc.city}, ${pc.country}`;
-        document.getElementById('edit-record-id').value = pc.id;
-        document.getElementById('edit-city').value = pc.city || '';
-        document.getElementById('edit-country').value = pc.country || '';
-        document.getElementById('edit-lat').value = pc.lat || '';
-        document.getElementById('edit-lng').value = pc.lng || '';
-        document.getElementById('edit-date').value = pc.date || '';
-        document.getElementById('edit-description').value = pc.description || '';
-        document.getElementById('edit-description-en').value = pc.description_en || '';
+        document.getElementById('edit-record-id').value         = pc.id;
+        document.getElementById('edit-city').value              = pc.city        || '';
+        document.getElementById('edit-country').value           = pc.country     || '';
+        document.getElementById('edit-lat').value               = pc.lat         || '';
+        document.getElementById('edit-lng').value               = pc.lng         || '';
+        document.getElementById('edit-date').value              = pc.date        || '';
+        document.getElementById('edit-description').value       = pc.description    || '';
+        document.getElementById('edit-description-en').value   = pc.description_en || '';
+
         // Görseller
-        const imgFront = document.getElementById('edit-img-front');
-        const imgBack = document.getElementById('edit-img-back');
-        const frontUrl = document.getElementById('edit-front-url');
-        const backUrl = document.getElementById('edit-back-url');
+        const imgFront  = document.getElementById('edit-img-front');
+        const imgBack   = document.getElementById('edit-img-back');
+        const frontUrl  = document.getElementById('edit-front-url');
+        const backUrl   = document.getElementById('edit-back-url');
         const frontOrig = document.getElementById('edit-front-original');
-        const backOrig = document.getElementById('edit-back-original');
+        const backOrig  = document.getElementById('edit-back-original');
 
         const fSrc = pc.image_front || pc.imageFront || '';
         imgFront.src = fSrc; imgFront.style.display = fSrc ? '' : 'none';
@@ -168,10 +250,10 @@
         // Etiketler
         renderEditTagChips();
 
-        // Review sebepler
+        // Review sebepleri
         const reviewSection = document.getElementById('review-reasons-section');
-        const reasonsList = document.getElementById('review-reasons-list');
-        const resolvedCb = document.getElementById('edit-resolved');
+        const reasonsList   = document.getElementById('review-reasons-list');
+        const resolvedCb    = document.getElementById('edit-resolved');
         if (pc.needs_review && pc.review_reasons?.length) {
             reviewSection.style.display = '';
             reasonsList.innerHTML = (pc.review_reasons || []).map(r =>
@@ -183,12 +265,12 @@
         }
 
         editSaveStatus.textContent = '';
-        editModal.style.display = 'flex';
+        editModal.style.display    = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
     function closeModal() {
-        editModal.style.display = 'none';
+        editModal.style.display      = 'none';
         document.body.style.overflow = '';
         editingId = null;
     }
@@ -219,7 +301,10 @@
             chip.className = 'admin-tag-chip';
             chip.textContent = tag;
             chip.title = 'Kaldırmak için tıkla';
-            chip.addEventListener('click', () => { editingTags = editingTags.filter(t => t !== tag); renderEditTagChips(); });
+            chip.addEventListener('click', () => {
+                editingTags = editingTags.filter(t => t !== tag);
+                renderEditTagChips();
+            });
             editTagsChips.appendChild(chip);
         });
     }
@@ -230,7 +315,10 @@
         if (frontFile) {
             document.getElementById('edit-front-url').value = '(yeni dosya seçildi: ' + frontFile.name + ')';
             const r = new FileReader();
-            r.onload = ev => { const img = document.getElementById('edit-img-front'); img.src = ev.target.result; img.style.display = ''; };
+            r.onload = ev => {
+                const img = document.getElementById('edit-img-front');
+                img.src = ev.target.result; img.style.display = '';
+            };
             r.readAsDataURL(frontFile);
         }
     });
@@ -239,7 +327,10 @@
         if (backFile) {
             document.getElementById('edit-back-url').value = '(yeni dosya seçildi: ' + backFile.name + ')';
             const r = new FileReader();
-            r.onload = ev => { const img = document.getElementById('edit-img-back'); img.src = ev.target.result; img.style.display = ''; };
+            r.onload = ev => {
+                const img = document.getElementById('edit-img-back');
+                img.src = ev.target.result; img.style.display = '';
+            };
             r.readAsDataURL(backFile);
         }
     });
@@ -252,13 +343,13 @@
 
         try {
             const record = {
-                city:            document.getElementById('edit-city').value.trim(),
-                country:         document.getElementById('edit-country').value.trim(),
-                lat:             parseFloat(document.getElementById('edit-lat').value) || null,
-                lng:             parseFloat(document.getElementById('edit-lng').value) || null,
-                date:            document.getElementById('edit-date').value || null,
-                description:     document.getElementById('edit-description').value.trim() || null,
-                description_en:  document.getElementById('edit-description-en').value.trim() || null,
+                city:           document.getElementById('edit-city').value.trim(),
+                country:        document.getElementById('edit-country').value.trim(),
+                lat:            parseFloat(document.getElementById('edit-lat').value) || null,
+                lng:            parseFloat(document.getElementById('edit-lng').value) || null,
+                date:           document.getElementById('edit-date').value || null,
+                description:    document.getElementById('edit-description').value.trim()    || null,
+                description_en: document.getElementById('edit-description-en').value.trim() || null,
                 tags: editingTags
             };
 
@@ -266,7 +357,7 @@
             const frontUrlVal = document.getElementById('edit-front-url').value.trim();
             const backUrlVal  = document.getElementById('edit-back-url').value.trim();
             if (frontUrlVal && !frontUrlVal.startsWith('(')) record.image_front = frontUrlVal;
-            if (backUrlVal && !backUrlVal.startsWith('('))  record.image_back  = backUrlVal;
+            if (backUrlVal  && !backUrlVal.startsWith('('))  record.image_back  = backUrlVal;
 
             // Yeni dosya yükleme
             if (frontFile) {
@@ -290,7 +381,7 @@
 
             // Review çözüldü mü?
             if (document.getElementById('edit-resolved')?.checked) {
-                record.needs_review = false;
+                record.needs_review   = false;
                 record.review_reasons = [];
             }
 
@@ -301,6 +392,7 @@
             editSaveStatus.textContent = '✅ Kaydedildi!';
             setTimeout(() => {
                 closeModal();
+                buildReasonOptions(); // menü sayılarını güncelle
                 renderList();
             }, 800);
         } catch (err) {
