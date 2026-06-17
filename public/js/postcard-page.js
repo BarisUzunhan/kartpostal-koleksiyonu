@@ -59,13 +59,7 @@
     }
     html += `</div>`;
 
-    // ── Bilgiler ─────────────────────────────────────────────────────────────
-    html += `<div class="detail-info">`;
-
-    // Şehir + ülke aynı satırda
-    html += `<h2 class="detail-city">${escapeHtml(postcard.city)}<span class="detail-country-inline">, ${escapeHtml(I18n.translateCountry(postcard.country))}</span></h2>`;
-
-    // Önceki / Sonraki linkleri
+    // ── Önceki / Sonraki — görselin hemen altında ────────────────────────────
     html += `<div class="detail-nav">`;
     if (prevCard) {
         html += `<a href="postcard.html?id=${encodeURIComponent(prevCard.id)}" class="detail-nav-link detail-nav-prev">
@@ -82,6 +76,12 @@
                  </a>`;
     }
     html += `</div>`;
+
+    // ── Bilgiler ─────────────────────────────────────────────────────────────
+    html += `<div class="detail-info">`;
+
+    // Şehir + ülke aynı satırda
+    html += `<h2 class="detail-city">${escapeHtml(postcard.city)}<span class="detail-country-inline">, ${escapeHtml(I18n.translateCountry(postcard.country))}</span></h2>`;
 
     // Açıklamalar
     if (desc.text)  html += `<p class="detail-description">${escapeHtml(desc.text)}</p>`;
