@@ -18,10 +18,14 @@ const PostcardMap = (function () {
             scrollWheelZoom: true
         }).setView([30, 20], 3);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxZoom: 18
-        }).addTo(map);
+        if (typeof MapBase !== 'undefined') {
+            MapBase.addBaseLayer(map);
+        } else {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                maxZoom: 18
+            }).addTo(map);
+        }
 
         markerClusterGroup = L.markerClusterGroup({
             maxClusterRadius: 50,
@@ -54,13 +58,13 @@ const PostcardMap = (function () {
             const marker = L.marker([postcard.lat, postcard.lng]);
             const imgSrc = PostcardData.getImage(postcard);
 
+            const cityCountry = Gallery.escapeHtml(postcard.city) + ', ' + Gallery.escapeHtml(I18n.translateCountry(postcard.country));
             const popupContent = `
                 <div class="popup-card" onclick="Modal.open(PostcardMap.getPostcardById('${postcard.id}'), PostcardMap.getCurrentPostcards())">
                     <img class="popup-image" src="${Gallery.escapeHtml(imgSrc)}" alt="${Gallery.escapeHtml(postcard.city)}" loading="lazy"
                          onerror="this.style.display='none'">
                     <div class="popup-info">
-                        <p class="popup-city">${Gallery.escapeHtml(postcard.city)}</p>
-                        <p class="popup-country">${Gallery.escapeHtml(postcard.country)}</p>
+                        <p class="popup-city">${cityCountry}</p>
                         <span class="popup-detail-link">${I18n.t('openNewTab')} &rarr;</span>
                     </div>
                 </div>

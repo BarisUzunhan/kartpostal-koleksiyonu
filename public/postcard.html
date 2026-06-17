@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/gallery.css">
     <style>
@@ -115,14 +116,8 @@
             font-family: var(--font-heading);
             font-size: 1.75rem;
             font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .detail-country {
-            font-size: 1rem;
-            color: var(--color-text-muted);
-            font-weight: 500;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
         }
 
         .detail-original-text {
@@ -263,20 +258,16 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="header-top">
-            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
-            <img src="images/headerorta.png" alt="" class="header-plane-img">
-        </div>
         <div class="header-inner">
+            <a href="index.html" class="header-brand">
+                <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+                <img src="images/headerorta.png" alt="" class="header-plane-img">
+            </a>
             <nav class="main-nav">
                 <a href="index.html" class="nav-link" data-i18n="navHome">Ana Sayfa</a>
-                <span class="nav-separator">|</span>
                 <a href="index.html?mode=map" class="nav-link" data-i18n="navMap">Harita</a>
-                <span class="nav-separator">|</span>
                 <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
-                <span class="nav-separator">|</span>
                 <a href="what-to-do.html" class="nav-link" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
-                <span class="nav-separator">|</span>
                 <a href="tags.html" class="nav-link" data-i18n="navTags">Etiketler</a>
                 <div class="lang-switcher">
                     <button class="lang-btn active" data-lang="tr">TR</button>
@@ -307,10 +298,13 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
     <script src="js/supabaseClient.js"></script>
     <script src="js/countries.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/map-base.js"></script>
     <script src="js/zoom.js"></script>
     <script src="js/postcard-page.js"></script>
 </body>

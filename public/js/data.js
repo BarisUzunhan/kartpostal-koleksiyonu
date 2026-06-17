@@ -158,10 +158,26 @@ const PostcardData = (function () {
         return [...new Set(filtered.map(p => p.city).filter(Boolean))].sort();
     }
 
-    function getSimilar(postcard, allPostcards, limit = 4) {
-        return allPostcards
-            .filter(p => p.id !== postcard.id && p.country === postcard.country)
-            .slice(0, limit);
+    function getSimilar(postcard, allPostcards, limit = 10) {
+        const myTags = Array.isArray(postcard.tags) ? postcard.tags : [];
+        const scored = allPostcards
+            .filter(p => p.id !== postcard.id)
+            .map(p => {
+                const pTags = Array.isArray(p.tags) ? p.tags : [];
+                const shared = myTags.filter(t => pTags.includes(t)).length;
+                const sameCountry = p.country === postcard.country ? 1 : 0;
+                return { p, score: shared * 10 + sameCountry };
+            })
+            .filter(x => x.score > 0)
+            .sort((a, b) => b.score - a.score)
+            .map(x => x.p);
+        // Ortak etiket yoksa aynı ülke yedeği
+        if (scored.length === 0 && postcard.country) {
+            return allPostcards
+                .filter(p => p.id !== postcard.id && p.country === postcard.country)
+                .slice(0, limit);
+        }
+        return scored.slice(0, limit);
     }
 
     // ── Etiket işlemleri ─────────────────────────────────────────────────

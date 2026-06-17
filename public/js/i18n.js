@@ -59,7 +59,9 @@ const I18n = (function () {
             saveError: 'Kaydetme hatasi',
             hasMoreImages: 'Bu sayfa başka görseller de içermektedir',
             otherImages: 'Diğer görseller',
-            clickToZoom: 'Büyütmek için tıklayın'
+            clickToZoom: 'Büyütmek için tıklayın',
+            prevPostcard: '‹ Önceki',
+            nextPostcard: 'Sonraki ›'
         },
         en: {
             siteTitle: 'Colors of Other Lands',
@@ -112,7 +114,9 @@ const I18n = (function () {
             saveError: 'Save error',
             hasMoreImages: 'This page contains more images',
             otherImages: 'Other images',
-            clickToZoom: 'Click to zoom'
+            clickToZoom: 'Click to zoom',
+            prevPostcard: '‹ Previous',
+            nextPostcard: 'Next ›'
         },
         zh: {
             siteTitle: '\u5f02\u57df\u4e4b\u8272',
@@ -165,7 +169,9 @@ const I18n = (function () {
             saveError: '\u4fdd\u5b58\u9519\u8bef',
             hasMoreImages: '\u672c\u9875\u8fd8\u6709\u66f4\u591a\u56fe\u7247',
             otherImages: '\u5176\u4ed6\u56fe\u7247',
-            clickToZoom: '\u70b9\u51fb\u653e\u5927'
+            clickToZoom: '\u70b9\u51fb\u653e\u5927',
+            prevPostcard: '\u2039 \u4e0a\u4e00\u5f20',
+            nextPostcard: '\u4e0b\u4e00\u5f20 \u203a'
         }
     };
 
@@ -190,6 +196,9 @@ const I18n = (function () {
         }
         if (typeof TagCloud !== 'undefined' && TagCloud.refresh) {
             TagCloud.refresh();
+        }
+        if (typeof MapBase !== 'undefined' && MapBase.setLanguage) {
+            MapBase.setLanguage(lang);
         }
     }
 

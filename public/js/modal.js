@@ -1,5 +1,5 @@
 /* ========================================
-   Modal — Yan Yana Ön/Arka Yüz + Zoom + Ekstra Görseller
+   Modal — Alt Alta Ön/Arka Yüz + Zoom + Mini Harita
    ======================================== */
 
 const Modal = (function () {
@@ -16,10 +16,12 @@ const Modal = (function () {
     const desc2El    = document.getElementById('modal-description-2');
     const translationNoteEl = document.getElementById('modal-translation-note');
     const openPageEl = document.getElementById('modal-open-page');
+    const mapEl      = document.getElementById('modal-map');
 
     let currentPostcard = null;
     let postcardList = [];
     let currentIndex = -1;
+    let miniMap = null;
 
     function init() {
         closeBtn.addEventListener('click', close);
@@ -62,6 +64,9 @@ const Modal = (function () {
         overlay.classList.remove('visible');
         document.body.style.overflow = '';
         currentPostcard = null;
+        // Mini haritayı temizle
+        if (miniMap) { miniMap.remove(); miniMap = null; }
+        if (mapEl) mapEl.style.display = 'none';
     }
 
     function renderContent(postcard) {
@@ -73,7 +78,7 @@ const Modal = (function () {
         imgFront.alt = postcard.city;
         imgFront.style.display = '';
 
-        // Arka yüz — varsa yan yana, yoksa gizle
+        // Arka yüz — varsa göster, yoksa gizle
         if (backSrc) {
             imgBack.src = backSrc;
             imgBack.alt = (postcard.city || '') + ' - arka yüz';
@@ -89,7 +94,6 @@ const Modal = (function () {
             if (extras && extras.length > 0) {
                 extraBtn.style.display = '';
                 extraBtn.href = `postcard.html?id=${encodeURIComponent(postcard.id)}`;
-                // i18n yoksa fallback metin
                 const span = extraBtn.querySelector('[data-i18n]');
                 if (span) span.textContent = I18n.t('hasMoreImages') || 'Bu sayfa başka görseller de içermektedir';
             } else {
@@ -97,9 +101,12 @@ const Modal = (function () {
             }
         }
 
-        // Şehir, ülke
-        cityEl.textContent    = postcard.city;
-        countryEl.textContent = I18n.translateCountry(postcard.country);
+        // Şehir + ülke aynı satırda
+        if (cityEl) cityEl.textContent = postcard.city || '';
+        if (countryEl) {
+            const ctry = I18n.translateCountry(postcard.country);
+            countryEl.textContent = ctry ? ', ' + ctry : '';
+        }
 
         // Açıklamalar
         const desc = I18n.getDescription(postcard);
@@ -120,38 +127,31 @@ const Modal = (function () {
             translationNoteEl.style.display = 'none';
         }
 
-        // Etiket rozetleri
-        renderTags(postcard);
-
         openPageEl.href = `postcard.html?id=${encodeURIComponent(postcard.id)}`;
-    }
 
-    function renderTags(postcard) {
-        const existing = document.getElementById('modal-tags');
-        if (existing) existing.remove();
-
-        const tags = I18n.filterTagsByLang(postcard.tags || []);
-        if (!tags.length) return;
-
-        const tagsDiv = document.createElement('div');
-        tagsDiv.id = 'modal-tags';
-        tagsDiv.className = 'modal-tags';
-
-        tags.forEach(tag => {
-            const chip = document.createElement('a');
-            chip.className = 'tag-chip';
-            chip.textContent = tag;
-            chip.href = `index.html?tag=${encodeURIComponent(tag)}`;
-            chip.title = `"${tag}" etiketini görüntüle`;
-            chip.addEventListener('click', (e) => {
-                e.preventDefault();
-                close();
-                window.location.href = `index.html?tag=${encodeURIComponent(tag)}`;
-            });
-            tagsDiv.appendChild(chip);
-        });
-
-        openPageEl.before(tagsDiv);
+        // Mini harita — mevcut haritayı temizle, yenisini kur
+        if (miniMap) { miniMap.remove(); miniMap = null; }
+        if (mapEl) {
+            if (postcard.lat && postcard.lng) {
+                mapEl.style.display = '';
+                // Kısa gecikme: modal animasyonu bitmeden önce harita boyutu sıfır olur
+                setTimeout(() => {
+                    miniMap = L.map(mapEl, { zoomControl: false, scrollWheelZoom: false, dragging: false })
+                        .setView([postcard.lat, postcard.lng], 8);
+                    if (typeof MapBase !== 'undefined') {
+                        MapBase.addBaseLayer(miniMap);
+                    } else {
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '&copy; OpenStreetMap', maxZoom: 18
+                        }).addTo(miniMap);
+                    }
+                    L.marker([postcard.lat, postcard.lng]).addTo(miniMap);
+                    miniMap.invalidateSize();
+                }, 320);
+            } else {
+                mapEl.style.display = 'none';
+            }
+        }
     }
 
     function navigatePrev() {

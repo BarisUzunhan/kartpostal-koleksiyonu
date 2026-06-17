@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="css/style.css">
@@ -16,33 +17,17 @@
 </head>
 <body>
     <header class="site-header">
-        <div class="header-top">
-            <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
-            <img src="images/headerorta.png" alt="" class="header-plane-img">
-        </div>
         <div class="header-inner">
+            <a href="index.html" class="header-brand">
+                <img src="images/logo.png" alt="Baska Topraklarin Renkleri" class="header-logo-img">
+                <img src="images/headerorta.png" alt="" class="header-plane-img">
+            </a>
             <nav class="main-nav">
                 <a href="index.html" class="nav-link active" data-i18n="navHome">Ana Sayfa</a>
-                <span class="nav-separator">|</span>
                 <a href="#" class="nav-link" id="nav-map-link" data-i18n="navMap">Harita</a>
-                <span class="nav-separator">|</span>
                 <a href="about.html" class="nav-link" data-i18n="navAbout">Hakkimda</a>
-                <span class="nav-separator">|</span>
                 <a href="what-to-do.html" class="nav-link" data-i18n="navWhatToDo">Ne Yapmaliyim?</a>
-                <span class="nav-separator">|</span>
                 <a href="tags.html" class="nav-link" data-i18n="navTags">Etiketler</a>
-                <div class="lang-switcher">
-                    <button class="lang-btn active" data-lang="tr">TR</button>
-                    <button class="lang-btn" data-lang="en">EN</button>
-                    <button class="lang-btn" data-lang="zh">中文</button>
-                </div>
-                <a href="admin.html" class="admin-link" title="Yonetici Paneli">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M12 15v2"/>
-                        <rect x="5" y="10" width="14" height="10" rx="2"/>
-                        <path d="M8 10V7a4 4 0 1 1 8 0v3"/>
-                    </svg>
-                </a>
             </nav>
         </div>
     </header>
@@ -67,6 +52,11 @@
                     <option value="date-desc" data-i18n="filterSortNew">Yeni &rarr; Eski</option>
                     <option value="date-asc" data-i18n="filterSortOld">Eski &rarr; Yeni</option>
                 </select>
+            </div>
+            <div class="lang-switcher">
+                <button class="lang-btn active" data-lang="tr">TR</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="zh">中文</button>
             </div>
         </div>
     </div>
@@ -101,8 +91,7 @@
                     <img id="modal-img-back" src="" alt="" style="display:none;">
                 </div>
                 <div class="modal-info">
-                    <h2 id="modal-city" class="modal-city"></h2>
-                    <p id="modal-country" class="modal-country"></p>
+                    <h2 class="modal-city"><span id="modal-city"></span><span id="modal-country" class="modal-country-inline"></span></h2>
                     <p id="modal-description" class="modal-description"></p>
                     <p id="modal-description-2" class="modal-description modal-description-secondary" style="display:none;"></p>
                     <p id="modal-translation-note" class="translation-note" style="display:none;"></p>
@@ -118,6 +107,7 @@
                         </svg>
                     </a>
                 </div>
+                <div id="modal-map" class="modal-map" style="display:none;"></div>
             </div>
         </div>
     </div>
@@ -130,11 +120,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="js/supabaseClient.js"></script>
     <script src="js/countries.js"></script>
     <script src="js/i18n.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/map-base.js"></script>
     <script src="js/zoom.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/gallery.js"></script>
