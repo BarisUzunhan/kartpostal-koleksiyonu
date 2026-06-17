@@ -550,15 +550,24 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Hamburger Nav Butonu ────────────────────────────────────────────── */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--color-text);
+    border-radius: var(--radius-sm);
+    transition: background var(--transition);
+    flex-shrink: 0;
+}
+.nav-toggle:hover { background: var(--color-border-light); }
+
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
-    .main-nav {
-        gap: 0.1rem;
-    }
-    .nav-link {
-        font-size: 0.75rem;
-        padding: 0 8px;
-    }
+    .main-nav { gap: 0.1rem; }
+    .nav-link { font-size: 0.75rem; padding: 0 8px; }
     .modal-card-prev { left: 8px; }
     .modal-card-next { right: 8px; }
 }
@@ -568,81 +577,83 @@ body {
         padding: 0 1rem;
         min-height: 54px;
     }
+    .header-logo-img { height: 30px; }
+    .header-plane-img { height: 36px; }
+    .main-nav { flex-wrap: wrap; justify-content: flex-end; }
+    .nav-link { font-size: 0.72rem; padding: 0 6px; height: 34px; }
+    .filter-inner { padding: 0 1rem; }
+    .filter-group select,
+    .filter-group input { font-size: 0.73rem; padding: 3px 7px; }
+    .filter-group select { min-width: 85px; }
+    .main-content { padding: 1rem; }
+    .modal-overlay { padding: 0; }
+    .modal-content { max-height: 100vh; border-radius: 0; height: 100%; }
+    .modal-images img { max-height: 35vh; }
+    .modal-card-prev { left: 6px; }
+    .modal-card-next { right: 6px; }
+    .modal-card-nav {
+        width: 36px; height: 36px; font-size: 1.5rem;
+        background: rgba(255,255,255,0.9); top: 30%;
+    }
+    .modal-info { padding: 1rem 1.25rem 1.5rem; }
+    .lang-switcher { margin-left: 0; }
+}
 
-    .header-logo-img {
-        height: 30px;
+/* ── Hamburger açılır menü (≤ 600px) ────────────────────────────────── */
+@media (max-width: 600px) {
+    .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .header-plane-img {
-        height: 36px;
-    }
+    .site-header { position: relative; }
 
     .main-nav {
-        flex-wrap: wrap;
-        justify-content: flex-end;
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--color-surface);
+        border-top: 1px solid var(--color-border-light);
+        border-bottom: 2px solid var(--color-border);
+        flex-direction: column;
+        padding: 0.25rem 0 0.5rem;
+        gap: 0;
+        box-shadow: 0 4px 12px rgba(31,92,108,0.12);
+        z-index: 200;
     }
+
+    .site-header.nav-open .main-nav { display: flex; }
 
     .nav-link {
-        font-size: 0.72rem;
-        padding: 0 6px;
-        height: 34px;
-    }
-
-    .filter-inner {
-        padding: 0 1rem;
-    }
-
-    .filter-group select,
-    .filter-group input {
-        font-size: 0.73rem;
-        padding: 3px 7px;
-    }
-
-    .filter-group select {
-        min-width: 85px;
-    }
-
-    .main-content {
-        padding: 0.75rem;
-    }
-
-    .modal-overlay {
-        padding: 0;
-    }
-
-    .modal-content {
-        max-height: 100vh;
-        border-radius: 0;
-        height: 100%;
-    }
-
-    .modal-images img {
-        max-height: 35vh;
-    }
-
-    .modal-card-prev {
-        left: 6px;
-    }
-
-    .modal-card-next {
-        right: 6px;
-    }
-
-    .modal-card-nav {
-        width: 36px;
-        height: 36px;
-        font-size: 1.5rem;
-        background: rgba(255, 255, 255, 0.9);
-        top: 30%;
-    }
-
-    .modal-info {
-        padding: 1rem 1.25rem 1.5rem;
+        width: 100%;
+        height: auto !important;
+        padding: 0.8rem 1.5rem !important;
+        font-size: 0.92rem !important;
+        border-radius: 0 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--color-border-light) !important;
+        white-space: normal;
     }
 
     .lang-switcher {
-        margin-left: 0;
+        margin: 0.5rem 1.5rem;
+        align-self: flex-start;
     }
+
+    .header-inner { min-height: 52px; }
+    .header-logo-img { height: 28px; }
+    .header-plane-img { height: 32px; }
+
+    /* Filter bar: 600px arası zaten flex-wrap:wrap ile iyi davranır */
+    .filter-inner { gap: 0.35rem; }
+    .filter-group select { min-width: 95px; }
+
+    /* Modal */
+    .modal-city { font-size: 1.2rem; }
+    .modal-info { padding: 0.9rem 1rem 1.25rem; }
 }
 
 @media (max-width: 480px) {
@@ -650,20 +661,11 @@ body {
         flex-direction: column;
         gap: 0.4rem;
     }
-
-    .filter-group {
-        width: 100%;
-    }
-
+    .filter-group { width: 100%; }
     .filter-group select,
-    .filter-group input {
-        width: 100%;
-    }
-
-    .header-top {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+    .filter-group input { width: 100%; }
+    .header-top { flex-wrap: wrap; justify-content: center; }
+    .main-content { padding: 0.75rem; }
 }
 
 /* ── Detay sayfası ek stiller ──────────────────────────────────────────────── */

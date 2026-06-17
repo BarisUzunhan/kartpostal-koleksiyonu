@@ -189,3 +189,46 @@
     font-size: 0.8rem;
 }
 .review-resolved-label { font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; }
+
+/* ── Mobil (≤ 640px) ────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    .editor-toolbar { padding: 0.5rem 0.75rem; }
+    .editor-toolbar-inner { gap: 0.5rem; }
+    .editor-filter-group label { display: none; }
+    .editor-filter-group select,
+    .editor-filter-group input { font-size: 0.82rem; }
+    .search-group input { min-width: 100px; }
+    .editor-count { font-size: 0.78rem; }
+
+    .editor-list { padding: 0 0.6rem 3rem; margin: 0.5rem auto; }
+
+    /* Satır: küçük thumbnail solda, bilgi sağda, buton alta */
+    .editor-row {
+        grid-template-columns: 60px 1fr;
+        grid-template-rows: auto auto;
+        gap: 0.6rem 0.75rem;
+        padding: 0.6rem 0.75rem;
+    }
+    .editor-row-img { grid-row: 1 / 2; }
+    .editor-row-info { grid-row: 1 / 2; }
+    .editor-row-actions {
+        grid-column: 1 / -1;
+        grid-row: 2 / 3;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .editor-row-img img,
+    .no-img-placeholder { width: 60px; height: 42px; }
+    .editor-row-title { font-size: 0.88rem; }
+
+    /* Düzenleme modal tam ekran */
+    .edit-modal-overlay { padding: 0; align-items: flex-end; }
+    .edit-modal-content {
+        max-height: 95dvh;
+        border-radius: 12px 12px 0 0;
+        max-width: 100%;
+    }
+    .edit-images-grid { grid-template-columns: 1fr; }
+    .edit-modal-body { padding: 1rem; gap: 1rem; }
+    .edit-modal-footer { padding: 0.75rem 1rem; }
+}

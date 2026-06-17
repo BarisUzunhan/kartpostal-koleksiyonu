@@ -266,10 +266,33 @@ const I18n = (function () {
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('lang-btn')) {
                 setLang(e.target.dataset.lang);
-                // Galeri ve filtreleri yeniden render et
                 if (typeof Gallery !== 'undefined') Gallery.applyFilters();
             }
         });
+
+        // Hamburger nav toggle
+        const navToggle  = document.getElementById('nav-toggle');
+        const siteHeader = document.querySelector('.site-header');
+        if (navToggle && siteHeader) {
+            navToggle.addEventListener('click', () => {
+                const isOpen = siteHeader.classList.toggle('nav-open');
+                navToggle.setAttribute('aria-expanded', String(isOpen));
+            });
+            document.querySelectorAll('.main-nav .nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    siteHeader.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+            // Dışarı tıklayınca kapat
+            document.addEventListener('click', (e) => {
+                if (siteHeader.classList.contains('nav-open') &&
+                    !siteHeader.contains(e.target)) {
+                    siteHeader.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
     }
 
     return { t, getLang, setLang, init, getDescription, applyTranslations, translateCountry, filterTagsByLang };
