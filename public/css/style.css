@@ -680,9 +680,9 @@ body {
 .detail-nav {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     margin: 0;
-    gap: 0.4rem;
+    gap: 0;
 }
 
 .detail-nav-link {
@@ -695,18 +695,18 @@ body {
     color: #fff;
     text-decoration: none;
     padding: 0.4rem 0.8rem;
-    background: #3596b4;
+    background: var(--color-bg);
     border: none;
     border-radius: 0;
-    transition: all var(--transition);
+    transition: background var(--transition);
     max-width: 50%;
     line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(31, 92, 108, 0.45);
 }
 
 .detail-nav-link:hover {
-    background: #2a7fa0;
+    background: var(--color-bg-alt);
     color: #fff;
-    filter: brightness(0.93);
 }
 
 .detail-nav-prev {
@@ -722,10 +722,11 @@ body {
 .detail-nav-label {
     font-weight: 400;
     font-size: 0.72rem;
-    color: rgba(255,255,255,0.82);
+    color: rgba(255,255,255,0.88);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(31, 92, 108, 0.45);
 }
 
 /* Benzer kartpostallar yatay barı */

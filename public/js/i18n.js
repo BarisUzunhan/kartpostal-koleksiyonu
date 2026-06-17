@@ -60,8 +60,8 @@ const I18n = (function () {
             hasMoreImages: 'Bu sayfa başka görseller de içermektedir',
             otherImages: 'Diğer görseller',
             clickToZoom: 'Büyütmek için tıklayın',
-            prevPostcard: '‹ Önceki',
-            nextPostcard: 'Sonraki ›'
+            prevPostcard: '‹ Önceki Kartpostal',
+            nextPostcard: 'Sonraki Kartpostal ›'
         },
         en: {
             siteTitle: 'Colors of Other Lands',
@@ -115,8 +115,8 @@ const I18n = (function () {
             hasMoreImages: 'This page contains more images',
             otherImages: 'Other images',
             clickToZoom: 'Click to zoom',
-            prevPostcard: '‹ Previous',
-            nextPostcard: 'Next ›'
+            prevPostcard: '‹ Previous Card',
+            nextPostcard: 'Next Card ›'
         },
         zh: {
             siteTitle: '\u5f02\u57df\u4e4b\u8272',
