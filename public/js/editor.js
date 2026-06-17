@@ -1,5 +1,5 @@
 /* ========================================
-   Editör — Tüm Kartpostallar + Sebep Filtresi
+   Editör — Tüm Kartpostallar + Filtre
    Supabase Auth korumalı; kalıcı düzeltme.
    ======================================== */
 
@@ -13,6 +13,7 @@
     const loginError   = document.getElementById('login-error');
     const editorList   = document.getElementById('editor-list');
     const editorCount  = document.getElementById('editor-count');
+    const filterView   = document.getElementById('filter-view');
     const filterReason = document.getElementById('filter-reason');
     const editorSearch = document.getElementById('editor-search');
 
@@ -57,65 +58,11 @@
         editorPanel.style.display  = 'block';
         logoutBtn.style.display    = 'inline-flex';
         allPostcards = await PostcardData.getAll();
-        buildReasonOptions();
         renderList();
     }
 
-    // ── Dinamik Sebep Menüsü ────────────────────────────────────────────
-    // Sıralı sebep tanımları (veride görünmeyen sebepler sayı=0 ile atlanır)
-    const REASON_ORDER = [
-        { value: 'ambiguous_country', label: 'Ülke belirsiz' },
-        { value: 'no_country',        label: 'Ülke yok' },
-        { value: 'no_coords',         label: 'Koordinat yok' },
-        { value: 'multi_image',       label: 'Çok görsel' },
-        { value: 'no_text',           label: 'Metin yok' },
-        { value: 'no_image',          label: 'Görsel yok' },
-    ];
-
-    function buildReasonOptions() {
-        // Sayıları canlı veriden hesapla
-        const total    = allPostcards.length;
-        const nReview  = allPostcards.filter(p => p.needs_review).length;
-        const nClean   = total - nReview;
-
-        // Her sebep için sayı
-        const reasonCounts = {};
-        allPostcards.forEach(p => {
-            (p.review_reasons || []).forEach(r => {
-                reasonCounts[r] = (reasonCounts[r] || 0) + 1;
-            });
-        });
-
-        // Mevcut seçimi koru
-        const prevVal = filterReason.value;
-        filterReason.innerHTML = '';
-
-        function addOpt(value, text) {
-            const opt = document.createElement('option');
-            opt.value = value;
-            opt.textContent = text;
-            filterReason.appendChild(opt);
-        }
-
-        addOpt('all',        `Tüm kartpostallar (${total})`);
-        addOpt('__review__', `Sorunlu — Tümü (${nReview})`);
-
-        REASON_ORDER.forEach(({ value, label }) => {
-            const cnt = reasonCounts[value] || 0;
-            if (cnt > 0) addOpt(value, `${label} (${cnt})`);
-        });
-
-        addOpt('__clean__', `Sorunsuz (${nClean})`);
-
-        // Seçimi geri yükle (yoksa 'all' kalır)
-        if (prevVal && [...filterReason.options].some(o => o.value === prevVal)) {
-            filterReason.value = prevVal;
-        } else {
-            filterReason.value = 'all';
-        }
-    }
-
     // ── Filtre & Liste ───────────────────────────────────────────────────
+    filterView.addEventListener('change', renderList);
     filterReason.addEventListener('change', renderList);
     let debounce;
     editorSearch.addEventListener('input', () => {
@@ -125,29 +72,18 @@
 
     function renderList() {
         let postcards = [...allPostcards];
-        const reason  = filterReason.value;
-        const search  = editorSearch.value.toLowerCase().trim();
+        const view   = filterView.value;
+        const reason = filterReason.value;
+        const search = editorSearch.value.toLowerCase().trim();
 
-        // Sebep filtresi
-        if (reason === 'all') {
-            // tümü — filtre yok
-        } else if (reason === '__review__') {
-            postcards = postcards.filter(p => p.needs_review);
-        } else if (reason === '__clean__') {
-            postcards = postcards.filter(p => !p.needs_review);
-        } else {
-            postcards = postcards.filter(p =>
-                Array.isArray(p.review_reasons) && p.review_reasons.includes(reason)
-            );
-        }
-
-        // Metin arama
-        if (search) {
-            postcards = postcards.filter(p =>
-                (p.city    || '').toLowerCase().includes(search) ||
-                (p.country || '').toLowerCase().includes(search)
-            );
-        }
+        if (view === 'review') postcards = postcards.filter(p => p.needs_review);
+        if (reason) postcards = postcards.filter(p =>
+            Array.isArray(p.review_reasons) && p.review_reasons.includes(reason)
+        );
+        if (search) postcards = postcards.filter(p =>
+            (p.city    || '').toLowerCase().includes(search) ||
+            (p.country || '').toLowerCase().includes(search)
+        );
 
         editorCount.textContent = `${postcards.length} kayıt`;
         editorList.innerHTML    = '';
@@ -158,7 +94,7 @@
         }
 
         postcards.forEach(pc => {
-            const row    = document.createElement('div');
+            const row     = document.createElement('div');
             row.className = `editor-row${pc.needs_review ? ' needs-review' : ''}`;
             const imgSrc  = pc.image_front || pc.imageFront || '';
             const reasons = (pc.review_reasons || []).map(r => reasonLabel(r)).join(', ');
@@ -219,15 +155,14 @@
 
         document.getElementById('edit-modal-title').textContent = `${pc.city}, ${pc.country}`;
         document.getElementById('edit-record-id').value         = pc.id;
-        document.getElementById('edit-city').value              = pc.city        || '';
-        document.getElementById('edit-country').value           = pc.country     || '';
-        document.getElementById('edit-lat').value               = pc.lat         || '';
-        document.getElementById('edit-lng').value               = pc.lng         || '';
-        document.getElementById('edit-date').value              = pc.date        || '';
+        document.getElementById('edit-city').value              = pc.city           || '';
+        document.getElementById('edit-country').value           = pc.country        || '';
+        document.getElementById('edit-lat').value               = pc.lat            || '';
+        document.getElementById('edit-lng').value               = pc.lng            || '';
+        document.getElementById('edit-date').value              = pc.date           || '';
         document.getElementById('edit-description').value       = pc.description    || '';
         document.getElementById('edit-description-en').value   = pc.description_en || '';
 
-        // Görseller
         const imgFront  = document.getElementById('edit-img-front');
         const imgBack   = document.getElementById('edit-img-back');
         const frontUrl  = document.getElementById('edit-front-url');
@@ -247,10 +182,8 @@
         if (pc.image_back_original) { backOrig.href = pc.image_back_original; backOrig.style.display = ''; }
         else backOrig.style.display = 'none';
 
-        // Etiketler
         renderEditTagChips();
 
-        // Review sebepleri
         const reviewSection = document.getElementById('review-reasons-section');
         const reasonsList   = document.getElementById('review-reasons-list');
         const resolvedCb    = document.getElementById('edit-resolved');
@@ -264,8 +197,8 @@
             reviewSection.style.display = 'none';
         }
 
-        editSaveStatus.textContent = '';
-        editModal.style.display    = 'flex';
+        editSaveStatus.textContent   = '';
+        editModal.style.display      = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
@@ -275,7 +208,6 @@
         editingId = null;
     }
 
-    // Etiket yönetimi
     editTagsInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
             e.preventDefault();
@@ -309,33 +241,26 @@
         });
     }
 
-    // Görsel dosya yükleme
-    document.getElementById('edit-front-file').addEventListener('change', async (e) => {
+    document.getElementById('edit-front-file').addEventListener('change', (e) => {
         frontFile = e.target.files[0];
         if (frontFile) {
-            document.getElementById('edit-front-url').value = '(yeni dosya seçildi: ' + frontFile.name + ')';
+            document.getElementById('edit-front-url').value = '(yeni dosya: ' + frontFile.name + ')';
             const r = new FileReader();
-            r.onload = ev => {
-                const img = document.getElementById('edit-img-front');
-                img.src = ev.target.result; img.style.display = '';
-            };
+            r.onload = ev => { const img = document.getElementById('edit-img-front'); img.src = ev.target.result; img.style.display = ''; };
             r.readAsDataURL(frontFile);
         }
     });
-    document.getElementById('edit-back-file').addEventListener('change', async (e) => {
+    document.getElementById('edit-back-file').addEventListener('change', (e) => {
         backFile = e.target.files[0];
         if (backFile) {
-            document.getElementById('edit-back-url').value = '(yeni dosya seçildi: ' + backFile.name + ')';
+            document.getElementById('edit-back-url').value = '(yeni dosya: ' + backFile.name + ')';
             const r = new FileReader();
-            r.onload = ev => {
-                const img = document.getElementById('edit-img-back');
-                img.src = ev.target.result; img.style.display = '';
-            };
+            r.onload = ev => { const img = document.getElementById('edit-img-back'); img.src = ev.target.result; img.style.display = ''; };
             r.readAsDataURL(backFile);
         }
     });
 
-    // Kaydet
+    // ── Kaydet ──────────────────────────────────────────────────────────
     editSaveBtn.addEventListener('click', async () => {
         if (!editingId) return;
         editSaveBtn.disabled = true;
@@ -353,13 +278,11 @@
                 tags: editingTags
             };
 
-            // Görsel URL'leri (elle değiştirildiyse)
             const frontUrlVal = document.getElementById('edit-front-url').value.trim();
             const backUrlVal  = document.getElementById('edit-back-url').value.trim();
             if (frontUrlVal && !frontUrlVal.startsWith('(')) record.image_front = frontUrlVal;
             if (backUrlVal  && !backUrlVal.startsWith('('))  record.image_back  = backUrlVal;
 
-            // Yeni dosya yükleme
             if (frontFile) {
                 const n = `${editingId}-front-${Date.now()}.jpg`;
                 const { error } = await SupabaseClient.storage.from('postcards').upload(`optimized/${n}`, frontFile, { upsert: true });
@@ -379,7 +302,6 @@
                 }
             }
 
-            // Review çözüldü mü?
             if (document.getElementById('edit-resolved')?.checked) {
                 record.needs_review   = false;
                 record.review_reasons = [];
@@ -390,11 +312,7 @@
             allPostcards = await PostcardData.getAll();
 
             editSaveStatus.textContent = '✅ Kaydedildi!';
-            setTimeout(() => {
-                closeModal();
-                buildReasonOptions(); // menü sayılarını güncelle
-                renderList();
-            }, 800);
+            setTimeout(() => { closeModal(); renderList(); }, 800);
         } catch (err) {
             editSaveStatus.textContent = `❌ Hata: ${err.message}`;
         } finally {

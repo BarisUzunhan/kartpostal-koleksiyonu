@@ -60,9 +60,22 @@
         <div class="editor-toolbar">
             <div class="editor-toolbar-inner">
                 <div class="editor-filter-group">
+                    <label>Göster:</label>
+                    <select id="filter-view">
+                        <option value="all">Tümü</option>
+                        <option value="review">Sorunlular</option>
+                    </select>
+                </div>
+                <div class="editor-filter-group">
                     <label>Sebep:</label>
                     <select id="filter-reason">
-                        <!-- Seçenekler JS tarafından dinamik olarak eklenir -->
+                        <option value="">Tümü</option>
+                        <option value="ambiguous_country">Ülke belirsiz</option>
+                        <option value="no_country">Ülke yok</option>
+                        <option value="no_coords">Koordinat yok</option>
+                        <option value="multi_image">Çok görsel</option>
+                        <option value="no_text">Metin yok</option>
+                        <option value="no_image">Görsel yok</option>
                     </select>
                 </div>
                 <div class="editor-filter-group search-group">
