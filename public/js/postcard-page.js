@@ -153,23 +153,39 @@
     const mapContainer = document.getElementById('detail-map');
 
     if (postcard.lat && postcard.lng && mapContainer) {
+        function buildDetailMap() {
+            if (detailMap) return;
+            detailMap = L.map(mapContainer, {
+                zoomControl: true,
+                scrollWheelZoom: true,
+                dragging: true,
+                minZoom: 2,
+                maxZoom: 19
+            }).setView([postcard.lat, postcard.lng], 8);
+            if (typeof MapBase !== 'undefined') {
+                MapBase.addBaseLayer(detailMap);
+            } else {
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap', maxZoom: 18
+                }).addTo(detailMap);
+            }
+            L.marker([postcard.lat, postcard.lng]).addTo(detailMap);
+            // GL canvas boyut senkronizasyonu
+            setTimeout(() => detailMap && detailMap.invalidateSize(), 200);
+        }
+
+        // IntersectionObserver: geniş rootMargin ile fold altını da yakala
         const mapObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (!entry.isIntersecting || detailMap) return;
-                detailMap = L.map(mapContainer, { zoomControl: true, scrollWheelZoom: true, dragging: true })
-                    .setView([postcard.lat, postcard.lng], 8);
-                if (typeof MapBase !== 'undefined') {
-                    MapBase.addBaseLayer(detailMap);
-                } else {
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap', maxZoom: 18
-                    }).addTo(detailMap);
-                }
-                L.marker([postcard.lat, postcard.lng]).addTo(detailMap);
+                buildDetailMap();
                 mapObserver.disconnect();
             });
-        }, { rootMargin: '200px' });
+        }, { rootMargin: '600px' });
         mapObserver.observe(mapContainer);
+
+        // Emniyet: ~1.5s sonra hâlâ kurulmadıysa zorla kur (gözlemci kaçırsa bile)
+        setTimeout(() => buildDetailMap(), 1500);
     }
 
     // ── Yardımcılar ─────────────────────────────────────────────────────────

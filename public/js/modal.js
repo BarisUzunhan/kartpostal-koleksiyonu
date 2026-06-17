@@ -66,7 +66,7 @@ const Modal = (function () {
         currentPostcard = null;
         // Mini haritayı temizle
         if (miniMap) { miniMap.remove(); miniMap = null; }
-        if (mapEl) mapEl.style.display = 'none';
+        if (mapEl) { mapEl.style.display = 'none'; mapEl.classList.remove('visible'); }
     }
 
     function renderContent(postcard) {
@@ -133,11 +133,18 @@ const Modal = (function () {
         if (miniMap) { miniMap.remove(); miniMap = null; }
         if (mapEl) {
             if (postcard.lat && postcard.lng) {
-                mapEl.style.display = '';
+                // Görünür yap — hem inline hem CSS override (Leaflet inline ekliyor)
+                mapEl.style.display = 'block';
+                mapEl.classList.add('visible');
                 // Kısa gecikme: modal animasyonu bitmeden önce harita boyutu sıfır olur
                 setTimeout(() => {
-                    miniMap = L.map(mapEl, { zoomControl: false, scrollWheelZoom: false, dragging: false })
-                        .setView([postcard.lat, postcard.lng], 8);
+                    miniMap = L.map(mapEl, {
+                        zoomControl: false,
+                        scrollWheelZoom: false,
+                        dragging: false,
+                        minZoom: 2,
+                        maxZoom: 19
+                    }).setView([postcard.lat, postcard.lng], 8);
                     if (typeof MapBase !== 'undefined') {
                         MapBase.addBaseLayer(miniMap);
                     } else {
@@ -150,6 +157,7 @@ const Modal = (function () {
                 }, 320);
             } else {
                 mapEl.style.display = 'none';
+                mapEl.classList.remove('visible');
             }
         }
     }

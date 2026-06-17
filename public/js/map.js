@@ -15,7 +15,9 @@ const PostcardMap = (function () {
 
         map = L.map('map', {
             zoomControl: true,
-            scrollWheelZoom: true
+            scrollWheelZoom: true,
+            minZoom: 2,
+            maxZoom: 19
         }).setView([30, 20], 3);
 
         if (typeof MapBase !== 'undefined') {

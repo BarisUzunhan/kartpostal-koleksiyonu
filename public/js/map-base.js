@@ -5,7 +5,7 @@
    ======================================== */
 
 const MapBase = (function () {
-    const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
+    const STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
     // Kayıtlı tüm MapLibre instance'ları
     const mlInstances = [];
@@ -42,10 +42,16 @@ const MapBase = (function () {
         const glLayer = L.maplibreGL({ style: STYLE_URL, attribution: '© OpenFreeMap, © OpenStreetMap' });
         glLayer.addTo(leafletMap);
 
-        glLayer.getMaplibreMap().on('styledata', () => {
-            const ml = glLayer.getMaplibreMap();
+        const ml = glLayer.getMaplibreMap();
+
+        // styledata: her stil güncellemesinde dili uygula (koşullu)
+        ml.on('styledata', () => {
             applyLang(ml, lang);
-            // Bu instance'ı kayıt et (varsa zaten kayıtlı mı?)
+        });
+
+        // idle: ilk tam yükleme sonrası bir kez daha uygula (çift-dil sorununu giderir)
+        ml.once('idle', () => {
+            applyLang(ml, lang);
             if (!mlInstances.includes(ml)) mlInstances.push(ml);
         });
 
