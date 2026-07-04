@@ -133,6 +133,9 @@
 
     container.innerHTML = html;
 
+    // Arka yüz de varsa sayfa genişler, görseller yan yana durur
+    document.querySelector('.detail-page')?.classList.toggle('two-images', hasBack);
+
     // ── Zoom olayları bağla ─────────────────────────────────────────────────
     const imgFrontEl = document.getElementById('detail-img-front');
     const imgBackEl  = document.getElementById('detail-img-back');

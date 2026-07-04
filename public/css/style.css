@@ -275,6 +275,12 @@ body {
     position: relative;
     box-shadow: var(--shadow-lg);
     animation: modalIn 0.3s ease;
+    transition: max-width 0.2s ease;
+}
+
+/* Ön + arka yüz birlikteyken modal genişler (yan yana yer için) */
+.modal-content.two-images {
+    max-width: 940px;
 }
 
 @keyframes modalIn {
@@ -351,11 +357,11 @@ body {
     flex-direction: column;
 }
 
-/* Ön + arka yüz alt alta */
+/* Ön + arka yüz — sığdıkça yan yana, dar ekranda alt alta (wrap) */
 .modal-images {
     display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
     width: 100%;
     background: var(--color-bg-alt);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -365,10 +371,13 @@ body {
 }
 
 .modal-images img {
-    width: 100%;
-    height: auto;
+    flex: 1 1 240px;
+    min-width: 0;
+    width: auto;
+    height: 320px;
     max-height: 45vh;
     object-fit: contain;
+    background: var(--color-bg-alt);
     display: block;
     cursor: zoom-in;
     transition: opacity 0.15s;
@@ -590,7 +599,8 @@ body {
     .main-content { padding: 1rem; }
     .modal-overlay { padding: 0; }
     .modal-content { max-height: 100vh; border-radius: 0; height: 100%; }
-    .modal-images img { max-height: 35vh; }
+    .modal-images img { height: 240px; max-height: 35vh; flex-basis: 160px; }
+    .modal-content.two-images { max-width: 100%; }
     .modal-card-prev { left: 6px; }
     .modal-card-next { right: 6px; }
     .modal-card-nav {

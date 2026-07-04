@@ -4,6 +4,7 @@
 
 const Modal = (function () {
     const overlay    = document.getElementById('modal-overlay');
+    const contentEl  = overlay.querySelector('.modal-content');
     const closeBtn   = document.getElementById('modal-close');
     const prevBtn    = document.getElementById('modal-prev');
     const nextBtn    = document.getElementById('modal-next');
@@ -72,6 +73,9 @@ const Modal = (function () {
     function renderContent(postcard) {
         const frontSrc = PostcardData.getImage(postcard);
         const backSrc  = postcard.image_back || postcard.imageBack || '';
+
+        // Arka yüz de varsa modal genişler, görseller yan yana durur
+        if (contentEl) contentEl.classList.toggle('two-images', !!backSrc);
 
         // Ön yüz — her zaman göster
         imgFront.src = frontSrc;

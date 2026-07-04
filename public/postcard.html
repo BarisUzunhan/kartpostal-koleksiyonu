@@ -16,6 +16,12 @@
             max-width: 640px;
             margin: 1.5rem auto;
             padding: 0 1.5rem;
+            transition: max-width 0.2s ease;
+        }
+
+        /* Ön + arka yüz birlikteyken sayfa genişler (yan yana yer için) */
+        .detail-page.two-images {
+            max-width: 900px;
         }
 
         .back-link {
@@ -39,11 +45,11 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Görseller alt alta (modal gibi) */
+        /* Görseller — sığdıkça yan yana, dar ekranda alt alta (wrap) */
         .detail-images {
             display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
             width: 100%;
             background: var(--color-bg-alt);
             padding: 0;
@@ -53,11 +59,13 @@
         }
 
         .detail-images .detail-image {
-            width: 100%;
-            max-width: 100%;
-            height: auto;
+            flex: 1 1 280px;
+            min-width: 0;
+            width: auto;
+            height: 340px;
             max-height: 50vh;
             object-fit: contain;
+            background: var(--color-bg-alt);
             display: block;
             cursor: zoom-in;
             transition: opacity 0.15s;
@@ -90,7 +98,12 @@
 
         @media (max-width: 640px) {
             .detail-images .detail-image {
+                height: 240px;
                 max-height: 45vh;
+                flex-basis: 160px;
+            }
+            .detail-page.two-images {
+                max-width: 100%;
             }
         }
 
