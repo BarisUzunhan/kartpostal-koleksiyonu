@@ -139,12 +139,12 @@ const Modal = (function () {
                 // Kısa gecikme: modal animasyonu bitmeden önce harita boyutu sıfır olur
                 setTimeout(() => {
                     miniMap = L.map(mapEl, {
-                        zoomControl: false,
-                        scrollWheelZoom: false,
-                        dragging: false,
+                        zoomControl: true,
+                        scrollWheelZoom: true,
+                        dragging: true,
                         minZoom: 2,
                         maxZoom: 19
-                    }).setView([postcard.lat, postcard.lng], 8);
+                    }).setView([postcard.lat, postcard.lng], 5);
                     if (typeof MapBase !== 'undefined') {
                         MapBase.addBaseLayer(miniMap);
                     } else {

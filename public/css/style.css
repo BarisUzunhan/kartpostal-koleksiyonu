@@ -444,6 +444,7 @@ body {
     line-height: 1.7;
     margin-bottom: 0.75rem;
     color: var(--color-text);
+    white-space: pre-line;
 }
 
 .translation-note {
@@ -451,6 +452,7 @@ body {
     color: var(--color-text-light);
     font-style: italic;
     margin-bottom: 0.75rem;
+    white-space: pre-line;
 }
 
 .modal-open-btn {
@@ -669,6 +671,11 @@ body {
 }
 
 /* ── Detay sayfası ek stiller ──────────────────────────────────────────────── */
+
+.detail-description,
+.detail-translation-note {
+    white-space: pre-line;
+}
 
 /* Şehir + ülke inline */
 .detail-country-inline {
