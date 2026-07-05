@@ -133,21 +133,27 @@
 
     container.innerHTML = html;
 
-    // Arka yüz de varsa sayfa genişler, görseller yan yana durur
-    document.querySelector('.detail-page')?.classList.toggle('two-images', hasBack);
-
     // ── Zoom olayları bağla ─────────────────────────────────────────────────
     const imgFrontEl = document.getElementById('detail-img-front');
     const imgBackEl  = document.getElementById('detail-img-back');
 
-    if (imgFrontEl) imgFrontEl.addEventListener('click', () => ImageZoom.open(frontOrigSrc));
-    if (imgBackEl)  imgBackEl.addEventListener('click',  () => ImageZoom.open(backOrigSrc));
+    // Büyütme (zoom) için görsel listesi: ön, arka, ekstralar (aynı sırayla)
+    const zoomImages = [frontOrigSrc];
+    if (hasBack) zoomImages.push(backOrigSrc);
+    for (let i = 0; i < extras.length; i++) {
+        if (!extras[i]) continue;
+        zoomImages.push(extrasOrig[i] || extras[i]);
+    }
+
+    if (imgFrontEl) imgFrontEl.addEventListener('click', () => ImageZoom.open(zoomImages, 0));
+    if (imgBackEl)  imgBackEl.addEventListener('click',  () => ImageZoom.open(zoomImages, hasBack ? 1 : 0));
 
     // Ekstra görseller zoom
     const extraGrid = document.getElementById('detail-extra-grid');
     if (extraGrid) {
-        extraGrid.querySelectorAll('img').forEach(img => {
-            img.addEventListener('click', () => ImageZoom.open(img.dataset.orig || img.src));
+        const baseIndex = hasBack ? 2 : 1;
+        extraGrid.querySelectorAll('img').forEach((img, i) => {
+            img.addEventListener('click', () => ImageZoom.open(zoomImages, baseIndex + i));
         });
     }
 

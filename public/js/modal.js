@@ -4,7 +4,6 @@
 
 const Modal = (function () {
     const overlay    = document.getElementById('modal-overlay');
-    const contentEl  = overlay.querySelector('.modal-content');
     const closeBtn   = document.getElementById('modal-close');
     const prevBtn    = document.getElementById('modal-prev');
     const nextBtn    = document.getElementById('modal-next');
@@ -23,6 +22,7 @@ const Modal = (function () {
     let postcardList = [];
     let currentIndex = -1;
     let miniMap = null;
+    let zoomImages = [];
 
     function init() {
         closeBtn.addEventListener('click', close);
@@ -40,14 +40,10 @@ const Modal = (function () {
 
         // Zoom — ön/arka görsele tıklanınca
         imgFront.addEventListener('click', () => {
-            if (!currentPostcard) return;
-            const src = currentPostcard.image_front_original || imgFront.src;
-            if (src) ImageZoom.open(src);
+            if (zoomImages[0]) ImageZoom.open(zoomImages, 0);
         });
         imgBack.addEventListener('click', () => {
-            if (!currentPostcard) return;
-            const src = currentPostcard.image_back_original || imgBack.src;
-            if (src) ImageZoom.open(src);
+            if (zoomImages.length > 1) ImageZoom.open(zoomImages, 1);
         });
     }
 
@@ -74,9 +70,6 @@ const Modal = (function () {
         const frontSrc = PostcardData.getImage(postcard);
         const backSrc  = postcard.image_back || postcard.imageBack || '';
 
-        // Arka yüz de varsa modal genişler, görseller yan yana durur
-        if (contentEl) contentEl.classList.toggle('two-images', !!backSrc);
-
         // Ön yüz — her zaman göster
         imgFront.src = frontSrc;
         imgFront.alt = postcard.city;
@@ -91,6 +84,10 @@ const Modal = (function () {
             imgBack.src = '';
             imgBack.style.display = 'none';
         }
+
+        // Büyütme (zoom) için görsel listesi
+        zoomImages = [postcard.image_front_original || frontSrc];
+        if (backSrc) zoomImages.push(postcard.image_back_original || backSrc);
 
         // Ekstra görseller butonu
         const extras = postcard.extra_images;

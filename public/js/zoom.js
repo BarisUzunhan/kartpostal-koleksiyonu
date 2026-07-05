@@ -7,6 +7,12 @@ const ImageZoom = (function () {
     let overlay = null;
     let img     = null;
     let closeBtn = null;
+    let prevBtn = null;
+    let nextBtn = null;
+
+    // Görsel listesi ve konum
+    let images = [];
+    let index  = 0;
 
     // Dönüşüm durumu
     let scale   = 1;
@@ -38,12 +44,26 @@ const ImageZoom = (function () {
         closeBtn.innerHTML = '&times;';
         closeBtn.title = 'Kapat';
 
+        prevBtn = document.createElement('button');
+        prevBtn.className = 'zoom-nav zoom-prev';
+        prevBtn.innerHTML = '&#8249;';
+        prevBtn.title = 'Önceki';
+
+        nextBtn = document.createElement('button');
+        nextBtn.className = 'zoom-nav zoom-next';
+        nextBtn.innerHTML = '&#8250;';
+        nextBtn.title = 'Sonraki';
+
         overlay.appendChild(img);
         overlay.appendChild(closeBtn);
+        overlay.appendChild(prevBtn);
+        overlay.appendChild(nextBtn);
         document.body.appendChild(overlay);
 
         // ── Olaylar ──────────────────────────────────────────────────────
         closeBtn.addEventListener('click', close);
+        prevBtn.addEventListener('click', e => { e.stopPropagation(); showPrev(); });
+        nextBtn.addEventListener('click', e => { e.stopPropagation(); showNext(); });
 
         // Overlay'e tık (görsel dışına)
         overlay.addEventListener('click', e => {
@@ -54,6 +74,8 @@ const ImageZoom = (function () {
         document.addEventListener('keydown', e => {
             if (!overlay.classList.contains('open')) return;
             if (e.key === 'Escape') close();
+            if (e.key === 'ArrowLeft') showPrev();
+            if (e.key === 'ArrowRight') showNext();
         });
 
         // Çift tık → sıfırla
@@ -74,11 +96,11 @@ const ImageZoom = (function () {
     }
 
     // ── Zoom aç/kapat ───────────────────────────────────────────────────────
-    function open(url) {
+    function open(urlOrList, startIndex) {
         build();
-        scale = 1; tx = 0; ty = 0;
-        applyTransform();
-        img.src = url;
+        images = (Array.isArray(urlOrList) ? urlOrList : [urlOrList]).filter(Boolean);
+        index = Math.min(Math.max(startIndex || 0, 0), images.length - 1);
+        loadCurrent();
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
     }
@@ -88,6 +110,34 @@ const ImageZoom = (function () {
         overlay.classList.remove('open');
         document.body.style.overflow = '';
         img.src = '';
+    }
+
+    function loadCurrent() {
+        resetTransform();
+        img.src = images[index];
+        updateNavButtons();
+    }
+
+    function showPrev() {
+        if (index <= 0) return;
+        index--;
+        loadCurrent();
+    }
+
+    function showNext() {
+        if (index >= images.length - 1) return;
+        index++;
+        loadCurrent();
+    }
+
+    function updateNavButtons() {
+        const multi = images.length > 1;
+        prevBtn.style.display = multi ? 'flex' : 'none';
+        nextBtn.style.display = multi ? 'flex' : 'none';
+        if (multi) {
+            prevBtn.style.visibility = index <= 0 ? 'hidden' : 'visible';
+            nextBtn.style.visibility = index >= images.length - 1 ? 'hidden' : 'visible';
+        }
     }
 
     // ── Dönüşüm ────────────────────────────────────────────────────────────
