@@ -8,6 +8,10 @@
     overflow: hidden;
     border: 1px solid var(--color-border);
     background: var(--color-bg-alt);
+    /* Leaflet'in iç pane/kontrol z-index'lerini (200-1000) kendi içine
+       hapseder, böylece kök stacking context'te header'ı (z-index:100)
+       asla geçemezler — mobil menü haritanın arkasında kalma hatasını çözer */
+    isolation: isolate;
 }
 
 .map {

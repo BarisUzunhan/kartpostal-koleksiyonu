@@ -89,6 +89,14 @@ body {
     width: auto;
 }
 
+/* Nav + dil seçici — birlikte sağ tarafa yaslanır (header-inner'ın tek
+   ikinci flex öğesi; böylece justify-content:space-between mobilde de
+   bozulmadan çalışır, hangi alt öğe görünür olursa olsun) */
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
 /* Nav — sağ taraf */
 .main-nav {
     display: flex;
@@ -201,11 +209,6 @@ body {
 
 .search-group input {
     width: 100%;
-}
-
-/* Dil seçici filtre çubuğunun en sağında */
-.filter-inner .lang-switcher {
-    margin-left: auto;
 }
 
 /* ---- Main Content ---- */
@@ -553,19 +556,54 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Hamburger Nav Butonu ────────────────────────────────────────────── */
-.nav-toggle {
+/* ── Dil değiştirme ikonu — mobilde hamburger'ın eski yerini alır ────── */
+.lang-toggle {
     display: none;
+    align-items: center;
+    gap: 5px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 8px;
+    padding: 8px 10px;
     color: var(--color-text);
     border-radius: var(--radius-sm);
     transition: background var(--transition);
     flex-shrink: 0;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
 }
-.nav-toggle:hover { background: var(--color-border-light); }
+.lang-toggle:hover { background: var(--color-border-light); }
+
+/* ── Mobil ikinci satır: Filtrele + Menü butonları ────────────────────── */
+.header-controls {
+    display: none;
+    border-top: 1px solid var(--color-border-light);
+}
+
+.control-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.65rem 0.5rem;
+    background: none;
+    border: none;
+    border-right: 1px solid var(--color-border-light);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.control-btn:last-child { border-right: none; }
+.control-btn:hover,
+.control-btn.active {
+    background: var(--color-border-light);
+    color: var(--color-text);
+}
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
@@ -602,33 +640,44 @@ body {
     .lang-switcher { margin-left: 0; }
 }
 
-/* ── Hamburger açılır menü (≤ 600px) ────────────────────────────────── */
+/* ── Mobil başlık: dil ikonu + açılır Filtrele/Menü paneli (≤ 600px) ── */
 @media (max-width: 600px) {
-    .nav-toggle {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+    .lang-toggle { display: flex; }
+    .header-controls { display: flex; }
 
     .site-header { position: relative; }
 
-    .main-nav {
+    /* Üç açılır panel de aynı desen: header'a göre absolute, üstte açılır.
+       Harita açıkken de görünür kalmaları map.css'teki isolation:isolate
+       sayesinde garanti (Leaflet katmanları artık header'ı geçemiyor). */
+    .main-nav,
+    .filter-bar,
+    .lang-switcher {
         display: none;
         position: absolute;
         top: 100%;
-        left: 0;
-        right: 0;
         background: var(--color-surface);
         border-top: 1px solid var(--color-border-light);
         border-bottom: 2px solid var(--color-border);
-        flex-direction: column;
-        padding: 0.25rem 0 0.5rem;
-        gap: 0;
         box-shadow: 0 4px 12px rgba(31,92,108,0.12);
         z-index: 200;
     }
 
+    .main-nav,
+    .filter-bar {
+        left: 0;
+        right: 0;
+    }
+
+    .main-nav {
+        flex-direction: column;
+        padding: 0.25rem 0 0.5rem;
+        gap: 0;
+    }
+
     .site-header.nav-open .main-nav { display: flex; }
+    .site-header.filter-open .filter-bar { display: block; }
+    .site-header.lang-open .lang-switcher { display: flex; }
 
     .nav-link {
         width: 100%;
@@ -641,18 +690,33 @@ body {
         white-space: normal;
     }
 
+    /* Filtre paneli — yatay sıkışık satır yerine dikey, tam genişlik alanlar */
+    .filter-bar { border-radius: 0; padding: 0; }
+    .filter-inner {
+        flex-direction: column;
+        align-items: stretch;
+        max-width: none;
+        margin: 0;
+        padding: 0.75rem 1.25rem;
+        gap: 0.5rem;
+    }
+    .filter-group,
+    .search-group { width: 100%; min-width: 0; }
+    .filter-group select,
+    .filter-group input { width: 100%; }
+
+    /* Dil paneli — sağ üstte küçük bir açılır kutu */
     .lang-switcher {
-        margin: 0.5rem 1.5rem;
-        align-self: flex-start;
+        right: 0.75rem;
+        margin: 0;
+        border-radius: var(--radius-sm);
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
     }
 
     .header-inner { min-height: 52px; }
     .header-logo-img { height: 28px; }
     .header-plane-img { height: 32px; }
-
-    /* Filter bar: 600px arası zaten flex-wrap:wrap ile iyi davranır */
-    .filter-inner { gap: 0.35rem; }
-    .filter-group select { min-width: 95px; }
 
     /* Modal */
     .modal-city { font-size: 1.2rem; }

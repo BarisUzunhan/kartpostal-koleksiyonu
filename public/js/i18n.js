@@ -23,6 +23,8 @@ const I18n = (function () {
             filterSortOld: 'Eski \u2192 Yeni',
             filterSort: 'Sirala',
             filterAll: 'Tumu',
+            filterToggle: 'Filtrele',
+            menuToggle: 'Menü',
             emptyTitle: 'Henuz kartpostal eklenmemis',
             emptyDesc: 'Yonetici panelinden ilk kartpostalinizi ekleyin.',
             noResults: 'Sonuc bulunamadi',
@@ -78,6 +80,8 @@ const I18n = (function () {
             filterSortOld: 'Oldest First',
             filterSort: 'Sort',
             filterAll: 'All',
+            filterToggle: 'Filter',
+            menuToggle: 'Menu',
             emptyTitle: 'No postcards yet',
             emptyDesc: 'Add your first postcard from the admin panel.',
             noResults: 'No results found',
@@ -133,6 +137,8 @@ const I18n = (function () {
             filterSortOld: '\u6700\u65e7\u4f18\u5148',
             filterSort: '\u6392\u5e8f',
             filterAll: '\u5168\u90e8',
+            filterToggle: '\u7b5b\u9009',
+            menuToggle: '\u83dc\u5355',
             emptyTitle: '\u8fd8\u6ca1\u6709\u660e\u4fe1\u7247',
             emptyDesc: '\u4ece\u7ba1\u7406\u9762\u677f\u6dfb\u52a0\u60a8\u7684\u7b2c\u4e00\u5f20\u660e\u4fe1\u7247\u3002',
             noResults: '\u672a\u627e\u5230\u7ed3\u679c',
@@ -220,6 +226,11 @@ const I18n = (function () {
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === currentLang);
         });
+        const langCodeEl = document.getElementById('lang-toggle-code');
+        if (langCodeEl) {
+            const codeMap = { tr: 'TR', en: 'EN', zh: '中文' };
+            langCodeEl.textContent = codeMap[currentLang] || currentLang.toUpperCase();
+        }
     }
 
     function translateCountry(name) {
@@ -263,34 +274,55 @@ const I18n = (function () {
         applyTranslations();
         updateLangButtons();
 
+        // Mobil başlık: Menü / Filtrele / Dil panelleri — aynı anda tek biri
+        // açık kalır (yer kaplamayı azaltmak asıl amaç olduğundan).
+        const siteHeader   = document.querySelector('.site-header');
+        const navToggle    = document.getElementById('nav-toggle');
+        const filterToggle = document.getElementById('filter-toggle');
+        const langToggle   = document.getElementById('lang-toggle');
+
+        const panels = [
+            { toggle: navToggle,    cls: 'nav-open' },
+            { toggle: filterToggle, cls: 'filter-open' },
+            { toggle: langToggle,   cls: 'lang-open' }
+        ].filter(p => p.toggle);
+
+        function closeAllPanels() {
+            if (!siteHeader) return;
+            panels.forEach(p => {
+                siteHeader.classList.remove(p.cls);
+                p.toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('lang-btn')) {
                 setLang(e.target.dataset.lang);
                 if (typeof Gallery !== 'undefined') Gallery.applyFilters();
+                closeAllPanels();
             }
         });
 
-        // Hamburger nav toggle
-        const navToggle  = document.getElementById('nav-toggle');
-        const siteHeader = document.querySelector('.site-header');
-        if (navToggle && siteHeader) {
-            navToggle.addEventListener('click', () => {
-                const isOpen = siteHeader.classList.toggle('nav-open');
-                navToggle.setAttribute('aria-expanded', String(isOpen));
-            });
-            document.querySelectorAll('.main-nav .nav-link').forEach(link => {
-                link.addEventListener('click', () => {
-                    siteHeader.classList.remove('nav-open');
-                    navToggle.setAttribute('aria-expanded', 'false');
+        if (siteHeader && panels.length) {
+            panels.forEach(({ toggle, cls }) => {
+                toggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = siteHeader.classList.contains(cls);
+                    closeAllPanels();
+                    if (!isOpen) {
+                        siteHeader.classList.add(cls);
+                        toggle.setAttribute('aria-expanded', 'true');
+                    }
                 });
             });
+
+            document.querySelectorAll('.main-nav .nav-link').forEach(link => {
+                link.addEventListener('click', closeAllPanels);
+            });
+
             // Dışarı tıklayınca kapat
             document.addEventListener('click', (e) => {
-                if (siteHeader.classList.contains('nav-open') &&
-                    !siteHeader.contains(e.target)) {
-                    siteHeader.classList.remove('nav-open');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                }
+                if (!siteHeader.contains(e.target)) closeAllPanels();
             });
         }
     }
