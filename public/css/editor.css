@@ -181,6 +181,59 @@
 .file-input-sm { display: none; }
 .btn-sm { padding: 0.2rem 0.6rem; font-size: 0.78rem; }
 
+/* ── Ek Görseller ──────────────────────── */
+.edit-extra-images-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+.edit-extra-slot {
+    position: relative;
+    border: 1px solid #e0ddd8;
+    border-radius: 8px;
+    padding: 0.6rem;
+    background: #fafaf8;
+}
+.edit-extra-slot img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+    border: 1px solid #e0ddd8;
+    background: #eee;
+}
+.edit-extra-slot input[type=url] {
+    width: 100%; padding: 0.3rem 0.5rem;
+    border: 1px solid #ddd; border-radius: 6px;
+    font-size: 0.78rem; font-family: inherit;
+    margin-bottom: 0.4rem;
+    box-sizing: border-box;
+}
+.edit-extra-remove-btn {
+    width: 100%;
+    color: #b23b3b;
+    border-color: #e6b8b8;
+}
+.edit-extra-remove-btn:hover { background: #fbe9e9; }
+
+.position-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+}
+.position-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
 /* ── Review ────────────────────────────── */
 .review-reasons-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
 .review-reason-tag {
@@ -229,6 +282,7 @@
         max-width: 100%;
     }
     .edit-images-grid { grid-template-columns: 1fr; }
+    .edit-extra-images-list { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
     .edit-modal-body { padding: 1rem; gap: 1rem; }
     .edit-modal-footer { padding: 0.75rem 1rem; }
 }

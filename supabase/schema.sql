@@ -28,6 +28,9 @@ create table if not exists postcards (
     image_back_original   text,                    -- Supabase Storage orijinal URL (varsa)
     extra_images          text[] default '{}',     -- Supabase Storage optimize URL'leri (3+ görsel)
     extra_images_original text[] default '{}',     -- Supabase Storage orijinal URL'leri (3+ görsel)
+    extra_images_position text default 'after_description'
+                          check (extra_images_position in ('after_images','after_description')),
+                                                     -- ek görseller ön/arka altında mı, açıklamalardan sonra mı
     needs_review          boolean default false,   -- editör düzeltmesi gerekiyor mu
     review_reasons        text[] default '{}',     -- neden (ör. 'multi_postcard', 'no_coords')
     created_at            timestamptz default now(),
@@ -119,3 +122,7 @@ create policy "Authenticated image delete"
 -- ============================================================
 alter table postcards add column if not exists extra_images          text[] default '{}';
 alter table postcards add column if not exists extra_images_original text[] default '{}';
+alter table postcards add column if not exists extra_images_position text default 'after_description';
+alter table postcards drop constraint if exists postcards_extra_images_position_check;
+alter table postcards add constraint postcards_extra_images_position_check
+    check (extra_images_position in ('after_images','after_description'));

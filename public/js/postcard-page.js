@@ -43,6 +43,25 @@
     // Benzer kartpostallar
     const similar = PostcardData.getSimilar(postcard, allPostcards, 10);
 
+    // Ek görseller bölümü — ön/arka yüzün altında mı, açıklamalardan sonra mı
+    // görünecek, kartpostala göre değişir (varsayılan: açıklamalardan sonra)
+    const extraImagesPosition = postcard.extra_images_position || 'after_description';
+
+    let extrasHtml = '';
+    if (extras.length > 0) {
+        extrasHtml += `<h3 class="detail-section-title" id="other-images-title">${I18n.t('otherImages') || 'Diğer görseller'}</h3>`;
+        extrasHtml += `<div class="detail-extra-grid" id="detail-extra-grid">`;
+        for (let i = 0; i < extras.length; i++) {
+            if (!extras[i]) continue;
+            extrasHtml += `<img src="${escapeHtml(extras[i])}" loading="lazy"
+                          alt="${escapeHtml(postcard.city)} - görsel ${i + 2}"
+                          title="${I18n.t('clickToZoom') || 'Büyütmek için tıklayın'}"
+                          data-orig="${escapeHtml(extrasOrig[i] || extras[i])}"
+                          onerror="this.style.display='none'">`;
+        }
+        extrasHtml += `</div>`;
+    }
+
     let html = `<div class="detail-card fade-in">`;
 
     // ── Görseller yan yana ──────────────────────────────────────────────────
@@ -58,6 +77,9 @@
                       onerror="this.style.display='none'">`;
     }
     html += `</div>`;
+
+    // Ön/arka yüzün hemen altında gösterilecekse burada ekle
+    if (extraImagesPosition === 'after_images') html += extrasHtml;
 
     // ── Önceki / Sonraki — görselin hemen altında ────────────────────────────
     html += `<div class="detail-nav">`;
@@ -88,20 +110,8 @@
     if (desc.text2) html += `<p class="detail-description detail-description-secondary">${escapeHtml(desc.text2)}</p>`;
     if (desc.note)  html += `<p class="detail-translation-note">${escapeHtml(desc.note)}</p>`;
 
-    // Ekstra görseller bölümü
-    if (extras.length > 0) {
-        html += `<h3 class="detail-section-title" id="other-images-title">${I18n.t('otherImages') || 'Diğer görseller'}</h3>`;
-        html += `<div class="detail-extra-grid" id="detail-extra-grid">`;
-        for (let i = 0; i < extras.length; i++) {
-            if (!extras[i]) continue;
-            html += `<img src="${escapeHtml(extras[i])}" loading="lazy"
-                          alt="${escapeHtml(postcard.city)} - görsel ${i + 2}"
-                          title="${I18n.t('clickToZoom') || 'Büyütmek için tıklayın'}"
-                          data-orig="${escapeHtml(extrasOrig[i] || extras[i])}"
-                          onerror="this.style.display='none'">`;
-        }
-        html += `</div>`;
-    }
+    // Açıklamalardan sonra gösterilecekse (varsayılan davranış) burada ekle
+    if (extraImagesPosition !== 'after_images') html += extrasHtml;
 
     // Mini harita (kabı koy, harita tembel yüklenir)
     html += `<div class="detail-section-header">
