@@ -329,7 +329,7 @@
 .table-thumb {
     width: 56px;
     height: 38px;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: var(--radius-sm);
     background: var(--color-border-light);
 }

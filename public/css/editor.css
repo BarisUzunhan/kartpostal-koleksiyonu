@@ -63,7 +63,8 @@
 .editor-row-img img {
     width: 80px;
     height: 55px;
-    object-fit: cover;
+    object-fit: contain;
+    background: #eae6de;
     border-radius: 4px;
     display: block;
 }

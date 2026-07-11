@@ -858,7 +858,8 @@ body {
 .similar-bar-card img {
     width: 160px;
     height: 107px;
-    object-fit: cover;
+    object-fit: contain;
+    background: var(--color-bg-alt);
     display: block;
 }
 

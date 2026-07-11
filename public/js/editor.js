@@ -77,15 +77,21 @@
         let postcards = [...allPostcards];
         const view   = filterView.value;
         const reason = filterReason.value;
-        const search = editorSearch.value.toLowerCase().trim();
+        // toLocaleLowerCase('tr') — düz toLowerCase() Türkçe büyük "İ"yi
+        // doğru küçültmüyor ("İtalya" → "italya" yerine "i̇talya" olur ve
+        // "italya" yazınca eşleşmez); tr locale'i bunu doğru yapıyor.
+        const search = editorSearch.value.toLocaleLowerCase('tr').trim();
 
         if (view === 'review') postcards = postcards.filter(p => p.needs_review);
         if (reason) postcards = postcards.filter(p =>
             Array.isArray(p.review_reasons) && p.review_reasons.includes(reason)
         );
         if (search) postcards = postcards.filter(p =>
-            (p.city    || '').toLowerCase().includes(search) ||
-            (p.country || '').toLowerCase().includes(search)
+            (p.city            || '').toLocaleLowerCase('tr').includes(search) ||
+            (p.country         || '').toLocaleLowerCase('tr').includes(search) ||
+            (p.description     || '').toLocaleLowerCase('tr').includes(search) ||
+            (p.description_en  || '').toLocaleLowerCase('tr').includes(search) ||
+            (Array.isArray(p.tags) && p.tags.some(t => t.toLocaleLowerCase('tr').includes(search)))
         );
 
         editorCount.textContent = `${postcards.length} kayıt`;
