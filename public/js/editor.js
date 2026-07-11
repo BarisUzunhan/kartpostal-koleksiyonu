@@ -21,6 +21,7 @@
     let editingTags  = [];
     let editingId    = null;
     let frontFile    = null, backFile = null;
+    let thumbFile    = null;
     // Her öğe: { optimizedUrl, originalUrl, file } — file varsa kaydette yüklenir
     let extraSlots   = [];
 
@@ -98,7 +99,7 @@
         postcards.forEach(pc => {
             const row     = document.createElement('div');
             row.className = `editor-row${pc.needs_review ? ' needs-review' : ''}`;
-            const imgSrc  = pc.image_front || pc.imageFront || '';
+            const imgSrc  = pc.image_thumbnail || pc.image_front || pc.imageFront || '';
             const reasons = (pc.review_reasons || []).map(r => reasonLabel(r)).join(', ');
 
             row.innerHTML = `
@@ -153,7 +154,7 @@
     function openEditModal(pc) {
         editingId   = pc.id;
         editingTags = [...(pc.tags || [])];
-        frontFile   = null; backFile = null;
+        frontFile   = null; backFile = null; thumbFile = null;
 
         document.getElementById('edit-modal-title').textContent = `${pc.city}, ${pc.country}`;
         document.getElementById('edit-record-id').value         = pc.id;
@@ -183,6 +184,13 @@
         backUrl.value = bSrc;
         if (pc.image_back_original) { backOrig.href = pc.image_back_original; backOrig.style.display = ''; }
         else backOrig.style.display = 'none';
+
+        // Thumbnail — boşsa ön yüz kullanılıyor, alanı boş bırakıyoruz (placeholder yok)
+        const imgThumb = document.getElementById('edit-img-thumb');
+        const thumbUrl = document.getElementById('edit-thumb-url');
+        const tSrc = pc.image_thumbnail || '';
+        imgThumb.src = tSrc; imgThumb.style.display = tSrc ? '' : 'none';
+        thumbUrl.value = tSrc;
 
         // Ek görseller — mevcut extra_images/extra_images_original'dan slot listesi kur
         const extras     = pc.extra_images          || [];
@@ -339,6 +347,15 @@
             r.readAsDataURL(backFile);
         }
     });
+    document.getElementById('edit-thumb-file').addEventListener('change', (e) => {
+        thumbFile = e.target.files[0];
+        if (thumbFile) {
+            document.getElementById('edit-thumb-url').value = '(yeni dosya: ' + thumbFile.name + ')';
+            const r = new FileReader();
+            r.onload = ev => { const img = document.getElementById('edit-img-thumb'); img.src = ev.target.result; img.style.display = ''; };
+            r.readAsDataURL(thumbFile);
+        }
+    });
 
     // ── Kaydet ──────────────────────────────────────────────────────────
     editSaveBtn.addEventListener('click', async () => {
@@ -372,6 +389,19 @@
                 const { optimizedUrl, originalUrl } = await uploadImage(backFile, `${editingId}-back-${Date.now()}.jpg`);
                 record.image_back = optimizedUrl;
                 record.image_back_original = originalUrl;
+            }
+
+            // Thumbnail — boş bırakılırsa temizlenir (ön yüze döner), URL girilirse
+            // olduğu gibi kullanılır, dosya seçilirse önce küçültülüp öyle yüklenir
+            const thumbUrlVal = document.getElementById('edit-thumb-url').value.trim();
+            if (thumbFile) {
+                const resized = await ImageUtils.resizeImage(thumbFile, 600, 0.82);
+                const path = `optimized/${editingId}-thumb-${Date.now()}.jpg`;
+                const { error } = await SupabaseClient.storage.from('postcards').upload(path, resized, { upsert: true, contentType: 'image/jpeg' });
+                if (error) throw error;
+                record.image_thumbnail = SupabaseClient.storage.from('postcards').getPublicUrl(path).data.publicUrl;
+            } else if (!thumbUrlVal.startsWith('(')) {
+                record.image_thumbnail = thumbUrlVal || null;
             }
 
             // Ek görseller — boş slotları (ne dosya ne URL) atla, sırayı koru

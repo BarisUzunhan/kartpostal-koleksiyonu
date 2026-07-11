@@ -20,12 +20,16 @@
 
     const imageFrontInput  = document.getElementById('form-image-front');
     const imageBackInput   = document.getElementById('form-image-back');
+    const imageThumbInput  = document.getElementById('form-image-thumb');
     const previewFront     = document.getElementById('image-preview-front');
     const previewBack      = document.getElementById('image-preview-back');
+    const previewThumb     = document.getElementById('image-preview-thumb');
     const placeholderFront = document.getElementById('upload-placeholder-front');
     const placeholderBack  = document.getElementById('upload-placeholder-back');
+    const placeholderThumb = document.getElementById('upload-placeholder-thumb');
     const uploadAreaFront  = document.getElementById('image-upload-front');
     const uploadAreaBack   = document.getElementById('image-upload-back');
+    const uploadAreaThumb  = document.getElementById('image-upload-thumb');
     const tagsInput  = document.getElementById('form-tags');
     const tagsChips  = document.getElementById('form-tags-chips');
 
@@ -33,6 +37,7 @@
     let adminMarker = null;
     let currentFrontFile = null;
     let currentBackFile  = null;
+    let currentThumbFile = null;
     let currentTags = [];
     let tableAllPostcards = [];
 
@@ -211,6 +216,7 @@
     // ── Görsel yükleme ────────────────────────────────────────────────────
     setupImageUpload(imageFrontInput, uploadAreaFront, previewFront, placeholderFront, 'front');
     setupImageUpload(imageBackInput,  uploadAreaBack,  previewBack,  placeholderBack,  'back');
+    setupImageUpload(imageThumbInput, uploadAreaThumb, previewThumb, placeholderThumb, 'thumb');
 
     function setupImageUpload(input, area, preview, placeholder, side) {
         input.addEventListener('change', (e) => {
@@ -228,7 +234,8 @@
 
     function storeFile(file, side) {
         if (side === 'front') currentFrontFile = file;
-        else currentBackFile = file;
+        else if (side === 'back') currentBackFile = file;
+        else currentThumbFile = file;
     }
 
     function showPreview(file, preview, placeholder) {
@@ -242,7 +249,7 @@
     }
 
     async function uploadToStorage(file, path) {
-        const { error } = await SupabaseClient.storage.from('postcards').upload(path, file, { upsert: true });
+        const { error } = await SupabaseClient.storage.from('postcards').upload(path, file, { upsert: true, contentType: file.type || 'image/jpeg' });
         if (error) throw new Error(`Görsel yükleme hatası: ${error.message}`);
         const { data } = SupabaseClient.storage.from('postcards').getPublicUrl(path);
         return data.publicUrl;
@@ -284,6 +291,10 @@
                 record.image_back          = await uploadToStorage(currentBackFile, `optimized/${safeName}-back.jpg`);
                 record.image_back_original = await uploadToStorage(currentBackFile, `original/${safeName}-back.jpg`);
             }
+            if (currentThumbFile) {
+                const resized = await ImageUtils.resizeImage(currentThumbFile, 600, 0.82);
+                record.image_thumbnail = await uploadToStorage(resized, `optimized/${safeName}-thumb.jpg`);
+            }
 
             if (editId) await PostcardData.update(editId, record);
             else await PostcardData.add(record);
@@ -306,12 +317,15 @@
         editIdField.value = '';
         currentFrontFile = null;
         currentBackFile  = null;
+        currentThumbFile = null;
         currentTags = [];
         renderTagChips();
         previewFront.style.display = 'none';
         previewBack.style.display  = 'none';
+        previewThumb.style.display = 'none';
         placeholderFront.style.display = '';
         placeholderBack.style.display  = '';
+        placeholderThumb.style.display = '';
         formTitle.textContent     = 'Yeni Kartpostal Ekle';
         formSubmitBtn.textContent = 'Kartpostal Ekle';
         formCancelBtn.style.display = 'none';
@@ -343,7 +357,7 @@
 
     function renderRow(pc) {
         const tr = document.createElement('tr');
-        const imgSrc = pc.image_front || pc.imageFront || pc.image || '';
+        const imgSrc = pc.image_thumbnail || pc.image_front || pc.imageFront || pc.image || '';
         const formattedDate = pc.date ? new Date(pc.date).toLocaleDateString('tr-TR', {
             year: 'numeric', month: 'short', day: 'numeric'
         }) : '';
@@ -385,11 +399,14 @@
         currentTags = [...(pc.tags || [])];
         renderTagChips();
 
-        currentFrontFile = null; currentBackFile = null;
+        currentFrontFile = null; currentBackFile = null; currentThumbFile = null;
         const frontSrc = pc.image_front || pc.imageFront || pc.image || '';
         if (frontSrc) { previewFront.src = frontSrc; previewFront.style.display = 'block'; placeholderFront.style.display = 'none'; }
         const backSrc = pc.image_back || pc.imageBack || '';
         if (backSrc) { previewBack.src = backSrc; previewBack.style.display = 'block'; placeholderBack.style.display = 'none'; }
+        const thumbSrc = pc.image_thumbnail || '';
+        if (thumbSrc) { previewThumb.src = thumbSrc; previewThumb.style.display = 'block'; placeholderThumb.style.display = 'none'; }
+        else { previewThumb.style.display = 'none'; placeholderThumb.style.display = ''; }
 
         if (pc.lat && pc.lng) { setMapMarker(pc.lat, pc.lng); adminMap.setView([pc.lat, pc.lng], 6); }
 

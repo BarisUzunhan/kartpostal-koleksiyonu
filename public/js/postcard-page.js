@@ -128,7 +128,7 @@
                     <h3 class="similar-bar-title">${I18n.t('similarCards')}</h3>
                     <div class="similar-bar-track">`;
         similar.forEach(s => {
-            const sImg = PostcardData.getImage(s);
+            const sImg = PostcardData.getThumb(s);
             const label = escapeHtml(s.city) + ', ' + escapeHtml(I18n.translateCountry(s.country));
             html += `<a href="postcard.html?id=${encodeURIComponent(s.id)}" class="similar-bar-card">
                         <img src="${escapeHtml(sImg)}" alt="${label}" loading="lazy"

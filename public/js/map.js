@@ -58,7 +58,7 @@ const PostcardMap = (function () {
             if (!postcard.lat || !postcard.lng) return;
 
             const marker = L.marker([postcard.lat, postcard.lng]);
-            const imgSrc = PostcardData.getImage(postcard);
+            const imgSrc = PostcardData.getThumb(postcard);
 
             const cityCountry = Gallery.escapeHtml(postcard.city) + ', ' + Gallery.escapeHtml(I18n.translateCountry(postcard.country));
             const popupContent = `

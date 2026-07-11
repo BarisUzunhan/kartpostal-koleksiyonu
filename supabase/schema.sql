@@ -26,6 +26,7 @@ create table if not exists postcards (
     image_back            text,                    -- Supabase Storage optimize URL (varsa)
     image_front_original  text,                    -- Supabase Storage orijinal URL
     image_back_original   text,                    -- Supabase Storage orijinal URL (varsa)
+    image_thumbnail       text,                    -- özel küçük resim (yoksa ön yüz kullanılır)
     extra_images          text[] default '{}',     -- Supabase Storage optimize URL'leri (3+ görsel)
     extra_images_original text[] default '{}',     -- Supabase Storage orijinal URL'leri (3+ görsel)
     extra_images_position text default 'after_description'
@@ -126,3 +127,4 @@ alter table postcards add column if not exists extra_images_position text defaul
 alter table postcards drop constraint if exists postcards_extra_images_position_check;
 alter table postcards add constraint postcards_extra_images_position_check
     check (extra_images_position in ('after_images','after_description'));
+alter table postcards add column if not exists image_thumbnail text;

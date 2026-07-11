@@ -65,7 +65,7 @@ const Gallery = (function () {
         card.style.animationDelay = `${index * 0.03}s`;
         card.dataset.id = postcard.id;
 
-        const imgSrc = PostcardData.getImage(postcard);
+        const imgSrc = PostcardData.getThumb(postcard);
         const translatedCountry = I18n.translateCountry(postcard.country);
         const label = escapeHtml(postcard.city) + ', ' + escapeHtml(translatedCountry);
 

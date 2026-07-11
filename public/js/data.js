@@ -194,11 +194,18 @@ const PostcardData = (function () {
     }
 
     // ── Görsel yardımcısı ─────────────────────────────────────────────────
+    // Tam boyut/ön yüz görseli — detay sayfası, modal, zoom kaynağı
     function getImage(postcard) {
         return postcard.image_front
             || postcard.imageFront   // geriye dönük uyumluluk
             || postcard.image
             || makePlaceholder(postcard.city, postcard.country);
+    }
+
+    // Küçük resim (thumbnail) — galeri kartı, benzer kartpostallar gibi
+    // küçük önizleme alanları. Özel thumbnail yoksa ön yüze düşer.
+    function getThumb(postcard) {
+        return postcard.image_thumbnail || getImage(postcard);
     }
 
     return {
@@ -208,6 +215,6 @@ const PostcardData = (function () {
         add, update, remove, invalidateCache,
         // Yardımcılar
         filterPostcards, getUniqueCountries, getCitiesByCountry,
-        getSimilar, getAllTags, getImage
+        getSimilar, getAllTags, getImage, getThumb
     };
 })();

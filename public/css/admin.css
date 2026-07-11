@@ -126,6 +126,16 @@
     gap: 1rem;
 }
 
+.form-row.image-row {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.form-hint-inline {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--color-text-muted, #aaa);
+}
+
 .coord-row { margin-top: 0.75rem; }
 
 /* Image Upload */
