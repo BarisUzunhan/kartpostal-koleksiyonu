@@ -51,9 +51,6 @@
     const navLinks = document.querySelectorAll('.nav-link');
     const mapLink = document.getElementById('nav-map-link');
     const mapContainer = document.getElementById('map-container');
-    const filterBar = document.getElementById('filter-bar');
-    const filterToggle = document.getElementById('filter-toggle');
-    const siteHeader = document.querySelector('.site-header');
     let currentMode = 'gallery';
 
     if (urlMode === 'map') switchToMap();
@@ -70,11 +67,8 @@
         paginationContainer.style.display = 'none';
         mapContainer.style.display = '';
         emptyState.style.display = 'none';
-        filterBar.style.display = 'none';
-        // Mobil: filtre paneli açıksa kapat, Filtrele butonunu da gizle
-        // (filtrelenecek galeri yok, mevcut davranışla tutarlı)
-        if (filterToggle) filterToggle.style.display = 'none';
-        if (siteHeader) siteHeader.classList.remove('filter-open');
+        // Filtre çubuğu haritada da açık kalır — pinler filtreye göre güncellenir
+        // (Gallery.applyFilters() zaten PostcardMap.updateMarkers'ı çağırıyor)
         mapLink.classList.add('active');
         document.querySelector('.nav-link[href="index.html"]').classList.remove('active');
         PostcardMap.show(Gallery.getFiltered());
@@ -85,8 +79,6 @@
         galleryContainer.style.display = '';
         paginationContainer.style.display = '';
         mapContainer.style.display = 'none';
-        filterBar.style.display = '';
-        if (filterToggle) filterToggle.style.display = '';
         mapLink.classList.remove('active');
         document.querySelector('.nav-link[href="index.html"]').classList.add('active');
         if (postcards.length === 0) {
