@@ -416,3 +416,139 @@
     .admin-table td:first-child { display: none; }
     .table-tags-cell { display: none; }
 }
+
+/* ════════════════════════════════════════
+   İstatistikler sekmesi
+   ════════════════════════════════════════ */
+.admin-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid var(--color-border-light);
+}
+.admin-tab {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.6rem 1.1rem;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+}
+.admin-tab:hover { color: var(--color-text); }
+.admin-tab.active { color: var(--color-text); border-bottom-color: var(--color-accent, #689fb0); }
+
+.stats-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.stats-range { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.range-btn {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.range-btn:hover { border-color: var(--color-accent, #689fb0); }
+.range-btn.active { background: var(--color-accent, #689fb0); color: #fff; border-color: var(--color-accent, #689fb0); }
+.stats-botswitch { font-size: 0.82rem; color: var(--color-text-muted); display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.stats-status { padding: 1.5rem 0; color: var(--color-text-muted); font-style: italic; }
+.stats-empty { color: var(--color-text-muted); font-style: italic; font-size: 0.82rem; padding: 0.5rem 0; }
+
+/* Özet kartlar */
+.stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-card {
+    background: var(--color-border-light);
+    border-radius: var(--radius-md);
+    padding: 1.1rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.stat-num { font-size: 1.9rem; font-weight: 700; color: var(--color-text); line-height: 1; }
+.stat-label { font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+.stats-h3 { font-size: 0.95rem; font-weight: 700; color: var(--color-text); margin: 1.5rem 0 0.75rem; }
+.stats-h3-note { font-weight: 400; font-size: 0.78rem; color: var(--color-text-muted); }
+
+/* Çubuk grafikler (bağımlılıksız) */
+.stat-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 140px;
+    overflow-x: auto;
+    padding-bottom: 1.1rem;
+}
+.stat-bar {
+    flex: 1 0 14px;
+    min-width: 14px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+.stat-bar-fill {
+    width: 70%;
+    background: var(--color-accent, #689fb0);
+    border-radius: 3px 3px 0 0;
+    transition: height var(--transition);
+}
+.stat-bar:hover .stat-bar-fill { background: var(--color-text, #1f5c6c); }
+.stat-bar-x {
+    position: absolute;
+    bottom: -1.1rem;
+    font-size: 0.62rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+.stat-bars-hours .stat-bar { flex: 1 0 auto; }
+
+/* Top-N tablolar */
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem 2rem; margin-top: 1rem; }
+.stat-block { min-width: 0; }
+.stat-table { display: flex; flex-direction: column; gap: 2px; }
+.stat-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 0.82rem;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+.stat-row-bar {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: var(--color-border-light);
+    z-index: 0;
+}
+.stat-row-key {
+    position: relative; z-index: 1;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--color-text);
+}
+.stat-row-val { position: relative; z-index: 1; font-weight: 600; color: var(--color-text-muted); margin-left: 0.5rem; }
+
+@media (max-width: 768px) {
+    .stat-cards { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
+}

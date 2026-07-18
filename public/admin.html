@@ -58,6 +58,12 @@
 
         <!-- Admin Paneli -->
         <div id="admin-panel" class="admin-panel" style="display:none;">
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-pane="postcards">Kartpostallar</button>
+                <button class="admin-tab" data-pane="stats">İstatistikler</button>
+            </div>
+
+            <div id="pane-postcards" class="admin-pane">
             <section class="admin-section">
                 <h2 class="section-title" id="form-title">Yeni Kartpostal Ekle</h2>
                 <form id="postcard-form" class="postcard-form">
@@ -191,6 +197,50 @@
                     <p id="table-empty" class="table-empty" style="display:none;">Henuz kartpostal eklenmemis.</p>
                 </div>
             </section>
+            </div><!-- /pane-postcards -->
+
+            <div id="pane-stats" class="admin-pane" style="display:none;">
+                <section class="admin-section">
+                    <div class="stats-toolbar">
+                        <div class="stats-range">
+                            <button class="range-btn" data-range="0">Bugün</button>
+                            <button class="range-btn active" data-range="7">Son 7 gün</button>
+                            <button class="range-btn" data-range="30">Son 30 gün</button>
+                            <button class="range-btn" data-range="90">Son 90 gün</button>
+                        </div>
+                        <label class="stats-botswitch"><input type="checkbox" id="stats-exclude-bots" checked> Botları hariç tut</label>
+                        <button id="stats-refresh" class="btn btn-secondary">Yenile</button>
+                    </div>
+
+                    <div id="stats-status" class="stats-status">İstatistik sekmesine geçince yüklenir.</div>
+
+                    <div id="stats-content" style="display:none;">
+                        <div class="stat-cards">
+                            <div class="stat-card"><span class="stat-num" id="sc-views">–</span><span class="stat-label">Görüntüleme</span></div>
+                            <div class="stat-card"><span class="stat-num" id="sc-visitors">–</span><span class="stat-label">Tekil ziyaretçi</span></div>
+                            <div class="stat-card"><span class="stat-num" id="sc-sessions">–</span><span class="stat-label">Oturum</span></div>
+                        </div>
+
+                        <h3 class="stats-h3">Günlük ziyaret</h3>
+                        <div id="chart-daily" class="stat-bars"></div>
+
+                        <h3 class="stats-h3">Saatlik yoğunluk <span class="stats-h3-note">(yerel saat)</span></h3>
+                        <div id="chart-hours" class="stat-bars stat-bars-hours"></div>
+
+                        <div class="stats-grid">
+                            <div class="stat-block"><h3 class="stats-h3">En çok gezilen sayfalar</h3><div id="top-pages" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Trafik kaynağı</h3><div id="top-sources" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Yönlendiren siteler</h3><div id="top-referrers" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Ülkeler</h3><div id="top-countries" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Şehirler</h3><div id="top-cities" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Tarayıcılar</h3><div id="top-browsers" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">İşletim sistemi</h3><div id="top-os" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Cihaz</h3><div id="top-devices" class="stat-table"></div></div>
+                            <div class="stat-block"><h3 class="stats-h3">Diller</h3><div id="top-languages" class="stat-table"></div></div>
+                        </div>
+                    </div>
+                </section>
+            </div><!-- /pane-stats -->
         </div>
     </main>
 
@@ -212,5 +262,6 @@
     <script src="js/auth.js"></script>
     <script src="js/image-utils.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/admin-stats.js"></script>
 </body>
 </html>
