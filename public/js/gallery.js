@@ -11,6 +11,8 @@ const Gallery = (function () {
     const perPage = 18;
     let observer = null;
     let activeTag = '';  // aktif etiket filtresi
+    let onChange = null; // durum değişince (filtre/sayfa) tetiklenen callback (URL senkronu)
+    let restoring = false; // popstate/ilk yükleme sırasında geri-bildirim döngüsünü engeller
 
     function init(postcards) {
         allPostcards = postcards;
@@ -104,11 +106,7 @@ const Gallery = (function () {
             chipContainer.querySelector('.tag-chip-remove').addEventListener('click', () => {
                 activeTag = '';
                 document.getElementById('filter-tag-hidden').value = '';
-                applyFilters();
-                // URL'den de kaldır
-                const url = new URL(window.location);
-                url.searchParams.delete('tag');
-                history.replaceState({}, '', url);
+                applyFilters(); // URL senkronu notifyChange üzerinden yapılır (boş tag URL'den düşer)
             });
         } else {
             chipContainer.innerHTML = '';
@@ -145,16 +143,53 @@ const Gallery = (function () {
             html += `<span class="disabled">${I18n.t('paginationLast')}</span>`;
         }
 
+        // Sayfaya git kutusu
+        html += `<span class="page-jump">`
+            + `<input type="number" min="1" max="${totalPages}" aria-label="${escapeHtml(I18n.t('paginationGoto'))}" placeholder="${currentPage}/${totalPages}">`
+            + `<button type="button">${escapeHtml(I18n.t('paginationGo'))}</button>`
+            + `</span>`;
+
         paginationContainer.innerHTML = html;
         paginationContainer.querySelectorAll('a[data-page]').forEach(a => {
             a.addEventListener('click', (e) => {
                 e.preventDefault();
-                currentPage = parseInt(a.dataset.page);
-                renderPage();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                goToPage(parseInt(a.dataset.page, 10));
             });
         });
+
+        const jump = paginationContainer.querySelector('.page-jump');
+        if (jump) {
+            const input = jump.querySelector('input');
+            const btn = jump.querySelector('button');
+            const go = () => {
+                const val = parseInt(input.value, 10);
+                if (Number.isNaN(val)) { input.value = ''; return; }
+                goToPage(val);
+            };
+            btn.addEventListener('click', go);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); go(); }
+            });
+        }
     }
+
+    // Tek sayfa-geçiş yolu — pagination linkleri ve "sayfaya git" kutusu bunu kullanır
+    function goToPage(n) {
+        if (!Number.isFinite(n)) return;
+        const totalPages = Math.max(1, Math.ceil(filteredPostcards.length / perPage));
+        const target = Math.min(Math.max(1, n), totalPages);
+        if (target === currentPage) return;
+        currentPage = target;
+        renderPage();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        notifyChange();
+    }
+
+    function notifyChange() {
+        if (!restoring && typeof onChange === 'function') onChange();
+    }
+
+    function setOnChange(cb) { onChange = cb; }
 
     function getPageRange(current, total) {
         if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -272,6 +307,70 @@ const Gallery = (function () {
         if (typeof PostcardMap !== 'undefined' && PostcardMap.updateMarkers) {
             PostcardMap.updateMarkers(filtered);
         }
+
+        notifyChange();
+    }
+
+    // ── URL durum senkronu ────────────────────────────────────────────────
+    function getStateParams() {
+        return {
+            country: document.getElementById('filter-country')?.value || '',
+            city: document.getElementById('filter-city')?.value || '',
+            search: document.getElementById('filter-search')?.value || '',
+            sort: document.getElementById('filter-sort')?.value || '',
+            tag: activeTag || (document.getElementById('filter-tag-hidden')?.value || ''),
+            page: currentPage
+        };
+    }
+
+    // params: URLSearchParams veya düz nesne. silent iken notifyChange tetiklenmez.
+    function restoreFromParams(params, { silent = true } = {}) {
+        const get = (k) => (params && typeof params.get === 'function')
+            ? (params.get(k) || '')
+            : ((params && params[k]) || '');
+
+        const country = get('country');
+        const city = get('city');
+        const search = get('search');
+        const sort = get('sort');
+        const tag = get('tag');
+        const page = parseInt(get('page'), 10) || 1;
+
+        const countrySelect = document.getElementById('filter-country');
+        const citySelect = document.getElementById('filter-city');
+        const searchInput = document.getElementById('filter-search');
+        const sortSelect = document.getElementById('filter-sort');
+
+        restoring = true;
+
+        // Sıra önemli: ülke → şehir seçenekleri → şehir değeri
+        if (countrySelect) countrySelect.value = country;
+        populateCityFilter(allPostcards, country);
+        if (citySelect) citySelect.value = city;
+        if (searchInput) searchInput.value = search;
+        if (sortSelect && sort) sortSelect.value = sort;
+
+        activeTag = tag;
+        const hiddenTag = document.getElementById('filter-tag-hidden');
+        if (hiddenTag) hiddenTag.value = tag;
+
+        const filtered = PostcardData.filterPostcards(allPostcards, {
+            country, city, search,
+            sortBy: sortSelect ? sortSelect.value : sort,
+            tag
+        });
+        filteredPostcards = filtered;
+
+        const totalPages = Math.max(1, Math.ceil(filteredPostcards.length / perPage));
+        currentPage = Math.min(Math.max(1, page), totalPages);
+        renderPage();
+
+        if (typeof PostcardMap !== 'undefined' && PostcardMap.updateMarkers) {
+            PostcardMap.updateMarkers(filtered);
+        }
+
+        restoring = false;
+        if (!silent) notifyChange();
     }
 
     function updateData(postcards) {
@@ -294,5 +393,5 @@ const Gallery = (function () {
         return div.innerHTML;
     }
 
-    return { init, render, updateData, applyFilters, getFiltered, formatDate, escapeHtml, setActiveTag, refreshCountryFilter };
+    return { init, render, updateData, applyFilters, getFiltered, formatDate, escapeHtml, setActiveTag, refreshCountryFilter, getStateParams, restoreFromParams, setOnChange };
 })();

@@ -518,6 +518,47 @@ body {
     pointer-events: none;
 }
 
+/* Sayfaya git kutusu */
+.page-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 10px;
+}
+
+.page-jump input {
+    width: 3.5em;
+    padding: 4px 6px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    text-align: center;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.page-jump input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.page-jump button {
+    padding: 4px 10px;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--color-surface);
+    background: var(--color-footer-bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition);
+}
+
+.page-jump button:hover {
+    background: var(--color-text);
+}
+
 /* ---- Footer ---- */
 .site-footer {
     background: var(--color-footer-bg);
