@@ -16,6 +16,7 @@
     const filterView   = document.getElementById('filter-view');
     const filterReason = document.getElementById('filter-reason');
     const editorSearch = document.getElementById('editor-search');
+    const cleanAllBtn  = document.getElementById('clean-all-btn');
 
     let allPostcards = [];
     let editingTags  = [];
@@ -24,6 +25,45 @@
     let thumbFile    = null;
     // Her öğe: { optimizedUrl, originalUrl, file } — file varsa kaydette yüklenir
     let extraSlots   = [];
+
+    // ── Zararlı script tespiti & temizleme ──────────────────────────────
+    // Eski WP hack'inden kalan "getCookie/document.write" enjeksiyonu. Script
+    // her zaman metnin SONUNDA; öncesindeki yasal metin korunur. Anchor'lar
+    // yasal kartpostal metninde asla geçmez. (dry-run ile 476 kayıtta doğrulandı)
+    const MW_ANCHOR  = /function getCookie|data:text\/javascript;base64|\(time=cookie\)|void 0===time|Math\.floor\(Date\.now\(\)|document\.cookie=|document\.write\(/;
+    const MW_RESIDUE = /\s*['"]*\)\}\s*$/;   // sondaki  ')} / '')}  artığı (JS gövdesi kesilmiş EN kayıtları)
+
+    function isDirty(t) {
+        return !!t && (MW_ANCHOR.test(t) || MW_RESIDUE.test(t));
+    }
+    function hasMalware(pc) { return isDirty(pc.description) || isDirty(pc.description_en); }
+
+    function cleanText(t) {
+        if (!t) return t;
+        let s = t;
+        const m = MW_ANCHOR.exec(s);          // en erken (soldaki) zararlı anchor
+        if (m) s = s.slice(0, m.index);
+        s = s.replace(/\s*\/\/[^\n]*$/, '');  // önünde kalan yarım '//' yorum satırı (Houston tipi)
+        s = s.replace(MW_RESIDUE, '');        // JS gövdesi olmayan EN kalıntısı
+        s = s.replace(/\s+$/, '');
+        return s.length ? s : null;
+    }
+
+    function malwareBadge(pc) {
+        const parts = [];
+        if (isDirty(pc.description))    parts.push('🦠 TR script');
+        if (isDirty(pc.description_en)) parts.push('EN kalıntı');
+        return parts.join(' · ');
+    }
+
+    async function cleanOne(pc) {
+        const updated = await PostcardData.update(pc.id, {
+            description:    cleanText(pc.description),
+            description_en: cleanText(pc.description_en)
+        });
+        const i = allPostcards.findIndex(p => p.id === pc.id);
+        if (i !== -1) allPostcards[i] = updated;
+    }
 
     // ── Auth ────────────────────────────────────────────────────────────
     const session = await Auth.getSession();
@@ -73,6 +113,30 @@
         debounce = setTimeout(renderList, 250);
     });
 
+    // Toplu temizle — listelenen (aramayla da daralmış olabilir) tüm zararlı kayıtları temizle
+    if (cleanAllBtn) cleanAllBtn.addEventListener('click', async () => {
+        const search  = editorSearch.value.toLocaleLowerCase('tr').trim();
+        const targets = allPostcards.filter(pc => hasMalware(pc) && (!search ||
+            (pc.city || '').toLocaleLowerCase('tr').includes(search) ||
+            (pc.country || '').toLocaleLowerCase('tr').includes(search) ||
+            (pc.description || '').toLocaleLowerCase('tr').includes(search) ||
+            (pc.description_en || '').toLocaleLowerCase('tr').includes(search)
+        ));
+        if (!targets.length) return;
+        if (!confirm(`${targets.length} kartpostaldaki zararlı script temizlenecek.\nGörseller, yasal metin ve İngilizce mesajlar korunur.\n\nDevam edilsin mi?`)) return;
+
+        cleanAllBtn.disabled = true;
+        let done = 0, failed = 0;
+        for (const pc of targets) {
+            try { await cleanOne(pc); done++; }
+            catch (err) { failed++; console.error('Temizleme hatası:', pc.id, err); }
+            cleanAllBtn.textContent = `🧹 Temizleniyor… ${done + failed}/${targets.length}`;
+        }
+        cleanAllBtn.disabled = false;
+        renderList();
+        alert(`Tamamlandı.\n${done} kayıt temizlendi${failed ? `\n${failed} kayıtta hata (konsola bakın)` : ''}.`);
+    });
+
     function renderList() {
         let postcards = [...allPostcards];
         const view   = filterView.value;
@@ -82,7 +146,8 @@
         // "italya" yazınca eşleşmez); tr locale'i bunu doğru yapıyor.
         const search = editorSearch.value.toLocaleLowerCase('tr').trim();
 
-        if (view === 'review') postcards = postcards.filter(p => p.needs_review);
+        if (view === 'review')  postcards = postcards.filter(p => p.needs_review);
+        if (view === 'malware') postcards = postcards.filter(hasMalware);
         if (reason) postcards = postcards.filter(p =>
             Array.isArray(p.review_reasons) && p.review_reasons.includes(reason)
         );
@@ -96,6 +161,13 @@
 
         editorCount.textContent = `${postcards.length} kayıt`;
         editorList.innerHTML    = '';
+
+        // Toplu temizle butonu — sadece "Script temizliği" görünümünde ve kayıt varken
+        if (cleanAllBtn) {
+            const show = (view === 'malware' && postcards.length > 0);
+            cleanAllBtn.style.display = show ? '' : 'none';
+            cleanAllBtn.textContent   = `🧹 Tümünü Temizle (${postcards.length})`;
+        }
 
         if (!postcards.length) {
             editorList.innerHTML = '<p class="no-results-title" style="padding:2rem;text-align:center;">Kayıt bulunamadı.</p>';
@@ -118,13 +190,27 @@
                     <strong class="editor-row-title">${escapeHtml(pc.city)}, ${escapeHtml(pc.country)}</strong>
                     <span class="editor-row-date">${pc.date || ''}</span>
                     ${pc.needs_review ? `<span class="review-badge">⚠️ ${reasons}</span>` : ''}
+                    ${view === 'malware' ? `<span class="malware-badge">${malwareBadge(pc)}</span>` : ''}
                     <div class="editor-row-tags">${(pc.tags || []).map(t => `<span class="table-tag">${escapeHtml(t)}</span>`).join(' ')}</div>
                 </div>
                 <div class="editor-row-actions">
+                    ${view === 'malware' ? '<button class="btn btn-clean">🧹 Temizle</button>' : ''}
                     <button class="btn btn-edit">Düzenle</button>
                 </div>
             `;
             row.querySelector('.btn-edit').addEventListener('click', () => openEditModal(pc));
+            const cleanBtn = row.querySelector('.btn-clean');
+            if (cleanBtn) cleanBtn.addEventListener('click', async () => {
+                if (!confirm(`"${pc.city}" kaydındaki zararlı script temizlenecek.\nGörseller ve yasal metin korunur. Onaylıyor musunuz?`)) return;
+                cleanBtn.disabled = true;
+                try {
+                    await cleanOne(pc);
+                    renderList();
+                } catch (err) {
+                    alert(`Hata: ${err.message}`);
+                    cleanBtn.disabled = false;
+                }
+            });
             editorList.appendChild(row);
         });
     }
