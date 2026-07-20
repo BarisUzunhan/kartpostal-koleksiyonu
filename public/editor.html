@@ -103,30 +103,14 @@
                 <div class="edit-modal-body">
                     <input type="hidden" id="edit-record-id">
 
-                    <!-- Görseller -->
+                    <!-- Görseller (birleşik, sıralanabilir liste) -->
                     <div class="edit-section">
                         <h3 class="edit-section-title">Görseller</h3>
-                        <div class="edit-images-grid">
-                            <div class="edit-image-slot">
-                                <label>Ön Yüz</label>
-                                <img id="edit-img-front" src="" alt="Ön yüz" onerror="this.style.display='none'">
-                                <input type="url" id="edit-front-url" placeholder="Görsel URL">
-                                <div class="edit-image-actions">
-                                    <input type="file" id="edit-front-file" accept="image/*" class="file-input-sm">
-                                    <label for="edit-front-file" class="btn btn-secondary btn-sm">Dosya Yükle</label>
-                                    <a id="edit-front-original" href="#" target="_blank" class="btn btn-secondary btn-sm" style="display:none;">Orijinali Gör</a>
-                                </div>
-                            </div>
-                            <div class="edit-image-slot">
-                                <label>Arka Yüz <span class="optional">(opsiyonel)</span></label>
-                                <img id="edit-img-back" src="" alt="Arka yüz" onerror="this.style.display='none'">
-                                <input type="url" id="edit-back-url" placeholder="Görsel URL">
-                                <div class="edit-image-actions">
-                                    <input type="file" id="edit-back-file" accept="image/*" class="file-input-sm">
-                                    <label for="edit-back-file" class="btn btn-secondary btn-sm">Dosya Yükle</label>
-                                    <a id="edit-back-original" href="#" target="_blank" class="btn btn-secondary btn-sm" style="display:none;">Orijinali Gör</a>
-                                </div>
-                            </div>
+                        <p class="optional" style="margin:0 0 0.75rem;">1. görsel ön yüz, 2. görsel arka yüz, sonrakiler ek görsel olur. Sırayı ↑/↓ ile değiştirin.</p>
+                        <div id="edit-image-list"></div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="edit-image-add-btn">+ Görsel Ekle</button>
+
+                        <div class="edit-images-grid" style="margin-top:1.25rem;">
                             <div class="edit-image-slot">
                                 <label>Thumbnail <span class="optional">(opsiyonel, boşsa ön yüz kullanılır)</span></label>
                                 <img id="edit-img-thumb" src="" alt="Thumbnail" onerror="this.style.display='none'">
@@ -139,12 +123,10 @@
                         </div>
                     </div>
 
-                    <!-- Ek Görseller -->
+                    <!-- Ek Görsellerin Konumu -->
                     <div class="edit-section">
-                        <h3 class="edit-section-title">Ek Görseller</h3>
-                        <div id="edit-extra-images-list" class="edit-extra-images-list"></div>
-                        <button type="button" class="btn btn-secondary btn-sm" id="edit-extra-add-btn">+ Görsel Ekle</button>
-
+                        <h3 class="edit-section-title">Ek Görsellerin Konumu</h3>
+                        <p class="optional" style="margin:0;">3. ve sonraki görseller sayfada nerede gösterilsin?</p>
                         <div class="position-radio-group">
                             <label class="position-radio-label">
                                 <input type="radio" name="extra-images-position" value="after_images">
@@ -238,6 +220,7 @@
     <script src="js/data.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/image-utils.js"></script>
+    <script src="js/image-list.js"></script>
     <script src="js/editor.js"></script>
 </body>
 </html>

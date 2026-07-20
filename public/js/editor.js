@@ -21,10 +21,9 @@
     let allPostcards = [];
     let editingTags  = [];
     let editingId    = null;
-    let frontFile    = null, backFile = null;
     let thumbFile    = null;
-    // Her öğe: { optimizedUrl, originalUrl, file } — file varsa kaydette yüklenir
-    let extraSlots   = [];
+    // Birleşik görsel listesi (ön + arka + ek); modal açıldığında oluşturulur
+    let imageList    = null;
 
     // ── Zararlı script tespiti & temizleme ──────────────────────────────
     // Eski WP hack'inden kalan "getCookie/document.write" enjeksiyonu. Script
@@ -246,7 +245,7 @@
     function openEditModal(pc) {
         editingId   = pc.id;
         editingTags = [...(pc.tags || [])];
-        frontFile   = null; backFile = null; thumbFile = null;
+        thumbFile   = null;
 
         document.getElementById('edit-modal-title').textContent = `${pc.city}, ${pc.country}`;
         document.getElementById('edit-record-id').value         = pc.id;
@@ -258,24 +257,8 @@
         document.getElementById('edit-description').value       = pc.description    || '';
         document.getElementById('edit-description-en').value   = pc.description_en || '';
 
-        const imgFront  = document.getElementById('edit-img-front');
-        const imgBack   = document.getElementById('edit-img-back');
-        const frontUrl  = document.getElementById('edit-front-url');
-        const backUrl   = document.getElementById('edit-back-url');
-        const frontOrig = document.getElementById('edit-front-original');
-        const backOrig  = document.getElementById('edit-back-original');
-
-        const fSrc = pc.image_front || pc.imageFront || '';
-        imgFront.src = fSrc; imgFront.style.display = fSrc ? '' : 'none';
-        frontUrl.value = fSrc;
-        if (pc.image_front_original) { frontOrig.href = pc.image_front_original; frontOrig.style.display = ''; }
-        else frontOrig.style.display = 'none';
-
-        const bSrc = pc.image_back || pc.imageBack || '';
-        imgBack.src = bSrc; imgBack.style.display = bSrc ? '' : 'none';
-        backUrl.value = bSrc;
-        if (pc.image_back_original) { backOrig.href = pc.image_back_original; backOrig.style.display = ''; }
-        else backOrig.style.display = 'none';
+        // Tüm görseller (ön + arka + ek) birleşik, sıralanabilir liste olarak
+        imageList.fromPostcard(pc);
 
         // Thumbnail — boşsa ön yüz kullanılıyor, alanı boş bırakıyoruz (placeholder yok)
         const imgThumb = document.getElementById('edit-img-thumb');
@@ -283,16 +266,6 @@
         const tSrc = pc.image_thumbnail || '';
         imgThumb.src = tSrc; imgThumb.style.display = tSrc ? '' : 'none';
         thumbUrl.value = tSrc;
-
-        // Ek görseller — mevcut extra_images/extra_images_original'dan slot listesi kur
-        const extras     = pc.extra_images          || [];
-        const extrasOrig = pc.extra_images_original || [];
-        extraSlots = extras.map((url, i) => ({
-            optimizedUrl: url || '',
-            originalUrl:  extrasOrig[i] || url || '',
-            file: null
-        }));
-        renderExtraSlots();
 
         const position = pc.extra_images_position || 'after_description';
         document.querySelectorAll('input[name="extra-images-position"]').forEach(r => {
@@ -325,68 +298,11 @@
         editingId = null;
     }
 
-    // ── Ek Görseller — slot render/ekle/kaldır ──────────────────────────
-    const extraListEl   = document.getElementById('edit-extra-images-list');
-    const extraAddBtn   = document.getElementById('edit-extra-add-btn');
-
-    function renderExtraSlots() {
-        extraListEl.innerHTML = '';
-        extraSlots.forEach((slot, i) => {
-            const previewSrc = slot.file ? '' : slot.optimizedUrl;
-            const wrap = document.createElement('div');
-            wrap.className = 'edit-extra-slot';
-            wrap.innerHTML = `
-                <img ${previewSrc ? `src="${previewSrc}"` : ''} alt="Ek görsel ${i + 1}" style="${previewSrc ? '' : 'display:none;'}" onerror="this.style.display='none'">
-                <input type="url" class="edit-extra-url" placeholder="Görsel URL" value="${slot.file ? '' : slot.optimizedUrl}">
-                <div class="edit-image-actions">
-                    <input type="file" class="file-input-sm edit-extra-file" accept="image/*" id="edit-extra-file-${i}">
-                    <label for="edit-extra-file-${i}" class="btn btn-secondary btn-sm">Dosya Yükle</label>
-                </div>
-                <button type="button" class="btn btn-sm edit-extra-remove-btn">Kaldır</button>
-            `;
-
-            const img      = wrap.querySelector('img');
-            const urlInput = wrap.querySelector('.edit-extra-url');
-            const fileInput = wrap.querySelector('.edit-extra-file');
-
-            urlInput.addEventListener('input', () => {
-                slot.optimizedUrl = urlInput.value.trim();
-                slot.file = null;
-            });
-
-            fileInput.addEventListener('change', (e) => {
-                slot.file = e.target.files[0] || null;
-                if (slot.file) {
-                    urlInput.value = '(yeni dosya: ' + slot.file.name + ')';
-                    const r = new FileReader();
-                    r.onload = ev => { img.src = ev.target.result; img.style.display = ''; };
-                    r.readAsDataURL(slot.file);
-                }
-            });
-
-            wrap.querySelector('.edit-extra-remove-btn').addEventListener('click', () => {
-                extraSlots.splice(i, 1);
-                renderExtraSlots();
-            });
-
-            extraListEl.appendChild(wrap);
-        });
-    }
-
-    extraAddBtn.addEventListener('click', () => {
-        extraSlots.push({ optimizedUrl: '', originalUrl: '', file: null });
-        renderExtraSlots();
+    // ── Görseller — birleşik, sıralanabilir liste ───────────────────────
+    imageList = new ImageListEditor(document.getElementById('edit-image-list'), {
+        idProvider: () => editingId || Date.now()
     });
-
-    // Ön/arka/ek görsel dosyalarını Supabase Storage'a yükleyen ortak yardımcı
-    async function uploadImage(file, pathBase) {
-        const { error } = await SupabaseClient.storage.from('postcards').upload(`optimized/${pathBase}`, file, { upsert: true });
-        if (error) throw error;
-        const optimizedUrl = SupabaseClient.storage.from('postcards').getPublicUrl(`optimized/${pathBase}`).data.publicUrl;
-        await SupabaseClient.storage.from('postcards').upload(`original/${pathBase}`, file, { upsert: true });
-        const originalUrl = SupabaseClient.storage.from('postcards').getPublicUrl(`original/${pathBase}`).data.publicUrl;
-        return { optimizedUrl, originalUrl };
-    }
+    document.getElementById('edit-image-add-btn').addEventListener('click', () => imageList.addSlot());
 
     editTagsInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -421,24 +337,6 @@
         });
     }
 
-    document.getElementById('edit-front-file').addEventListener('change', (e) => {
-        frontFile = e.target.files[0];
-        if (frontFile) {
-            document.getElementById('edit-front-url').value = '(yeni dosya: ' + frontFile.name + ')';
-            const r = new FileReader();
-            r.onload = ev => { const img = document.getElementById('edit-img-front'); img.src = ev.target.result; img.style.display = ''; };
-            r.readAsDataURL(frontFile);
-        }
-    });
-    document.getElementById('edit-back-file').addEventListener('change', (e) => {
-        backFile = e.target.files[0];
-        if (backFile) {
-            document.getElementById('edit-back-url').value = '(yeni dosya: ' + backFile.name + ')';
-            const r = new FileReader();
-            r.onload = ev => { const img = document.getElementById('edit-img-back'); img.src = ev.target.result; img.style.display = ''; };
-            r.readAsDataURL(backFile);
-        }
-    });
     document.getElementById('edit-thumb-file').addEventListener('change', (e) => {
         thumbFile = e.target.files[0];
         if (thumbFile) {
@@ -452,6 +350,10 @@
     // ── Kaydet ──────────────────────────────────────────────────────────
     editSaveBtn.addEventListener('click', async () => {
         if (!editingId) return;
+        if (!imageList.hasAny()) {
+            editSaveStatus.textContent = '❌ En az bir görsel gerekli.';
+            return;
+        }
         editSaveBtn.disabled = true;
         editSaveStatus.textContent = 'Kaydediliyor...';
 
@@ -467,21 +369,9 @@
                 tags: editingTags
             };
 
-            const frontUrlVal = document.getElementById('edit-front-url').value.trim();
-            const backUrlVal  = document.getElementById('edit-back-url').value.trim();
-            if (frontUrlVal && !frontUrlVal.startsWith('(')) record.image_front = frontUrlVal;
-            if (backUrlVal  && !backUrlVal.startsWith('('))  record.image_back  = backUrlVal;
-
-            if (frontFile) {
-                const { optimizedUrl, originalUrl } = await uploadImage(frontFile, `${editingId}-front-${Date.now()}.jpg`);
-                record.image_front = optimizedUrl;
-                record.image_front_original = originalUrl;
-            }
-            if (backFile) {
-                const { optimizedUrl, originalUrl } = await uploadImage(backFile, `${editingId}-back-${Date.now()}.jpg`);
-                record.image_back = optimizedUrl;
-                record.image_back_original = originalUrl;
-            }
+            // Ön/arka/ek görseller — birleşik listeden kolonlara serileştir
+            // (kullanılmayan alanlar açıkça null/[] yazılır)
+            Object.assign(record, await imageList.toRecord());
 
             // Thumbnail — boş bırakılırsa temizlenir (ön yüze döner), URL girilirse
             // olduğu gibi kullanılır, dosya seçilirse önce küçültülüp öyle yüklenir
@@ -495,23 +385,6 @@
             } else if (!thumbUrlVal.startsWith('(')) {
                 record.image_thumbnail = thumbUrlVal || null;
             }
-
-            // Ek görseller — boş slotları (ne dosya ne URL) atla, sırayı koru
-            const extraImages = [];
-            const extraImagesOriginal = [];
-            for (let i = 0; i < extraSlots.length; i++) {
-                const slot = extraSlots[i];
-                if (slot.file) {
-                    const { optimizedUrl, originalUrl } = await uploadImage(slot.file, `${editingId}-extra-${i}-${Date.now()}.jpg`);
-                    extraImages.push(optimizedUrl);
-                    extraImagesOriginal.push(originalUrl);
-                } else if (slot.optimizedUrl) {
-                    extraImages.push(slot.optimizedUrl);
-                    extraImagesOriginal.push(slot.originalUrl || slot.optimizedUrl);
-                }
-            }
-            record.extra_images = extraImages;
-            record.extra_images_original = extraImagesOriginal;
 
             const positionInput = document.querySelector('input[name="extra-images-position"]:checked');
             record.extra_images_position = positionInput ? positionInput.value : 'after_description';

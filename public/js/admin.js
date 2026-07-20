@@ -18,28 +18,24 @@
     const tableEmpty   = document.getElementById('table-empty');
     const tableSearch  = document.getElementById('table-search');
 
-    const imageFrontInput  = document.getElementById('form-image-front');
-    const imageBackInput   = document.getElementById('form-image-back');
     const imageThumbInput  = document.getElementById('form-image-thumb');
-    const previewFront     = document.getElementById('image-preview-front');
-    const previewBack      = document.getElementById('image-preview-back');
     const previewThumb     = document.getElementById('image-preview-thumb');
-    const placeholderFront = document.getElementById('upload-placeholder-front');
-    const placeholderBack  = document.getElementById('upload-placeholder-back');
     const placeholderThumb = document.getElementById('upload-placeholder-thumb');
-    const uploadAreaFront  = document.getElementById('image-upload-front');
-    const uploadAreaBack   = document.getElementById('image-upload-back');
     const uploadAreaThumb  = document.getElementById('image-upload-thumb');
     const tagsInput  = document.getElementById('form-tags');
     const tagsChips  = document.getElementById('form-tags-chips');
 
     let adminMap = null;
     let adminMarker = null;
-    let currentFrontFile = null;
-    let currentBackFile  = null;
     let currentThumbFile = null;
     let currentTags = [];
     let tableAllPostcards = [];
+
+    // Birleşik, sıralanabilir görsel listesi (ön + arka + ek)
+    const imageList = new ImageListEditor(document.getElementById('form-image-list'), {
+        idProvider: () => editIdField.value || Date.now()
+    });
+    document.getElementById('form-image-add-btn').addEventListener('click', () => imageList.addSlot());
 
     // ── Oturum kontrolü ─────────────────────────────────────────────────
     const session = await Auth.getSession();
@@ -214,28 +210,20 @@
     }
 
     // ── Görsel yükleme ────────────────────────────────────────────────────
-    setupImageUpload(imageFrontInput, uploadAreaFront, previewFront, placeholderFront, 'front');
-    setupImageUpload(imageBackInput,  uploadAreaBack,  previewBack,  placeholderBack,  'back');
-    setupImageUpload(imageThumbInput, uploadAreaThumb, previewThumb, placeholderThumb, 'thumb');
+    setupImageUpload(imageThumbInput, uploadAreaThumb, previewThumb, placeholderThumb);
 
-    function setupImageUpload(input, area, preview, placeholder, side) {
+    function setupImageUpload(input, area, preview, placeholder) {
         input.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) { storeFile(file, side); showPreview(file, preview, placeholder); }
+            if (file) { currentThumbFile = file; showPreview(file, preview, placeholder); }
         });
         area.addEventListener('dragover',  (e) => { e.preventDefault(); area.classList.add('dragover'); });
         area.addEventListener('dragleave', () => area.classList.remove('dragover'));
         area.addEventListener('drop', (e) => {
             e.preventDefault(); area.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
-            if (file?.type.startsWith('image/')) { storeFile(file, side); showPreview(file, preview, placeholder); }
+            if (file?.type.startsWith('image/')) { currentThumbFile = file; showPreview(file, preview, placeholder); }
         });
-    }
-
-    function storeFile(file, side) {
-        if (side === 'front') currentFrontFile = file;
-        else if (side === 'back') currentBackFile = file;
-        else currentThumbFile = file;
     }
 
     function showPreview(file, preview, placeholder) {
@@ -271,8 +259,8 @@
             alert('Lütfen tüm zorunlu alanları doldurun.');
             return;
         }
-        if (!editId && !currentFrontFile) {
-            alert('Lütfen ön yüz görseli seçin.');
+        if (!imageList.hasAny()) {
+            alert('Lütfen en az bir görsel ekleyin.');
             return;
         }
 
@@ -283,14 +271,10 @@
             const record = { city, country, date, description, description_en, lat, lng, tags: currentTags };
             const safeName = `${Date.now()}-${city.toLowerCase().replace(/[^a-z0-9]/gi, '-')}`;
 
-            if (currentFrontFile) {
-                record.image_front          = await uploadToStorage(currentFrontFile, `optimized/${safeName}-front.jpg`);
-                record.image_front_original = await uploadToStorage(currentFrontFile, `original/${safeName}-front.jpg`);
-            }
-            if (currentBackFile) {
-                record.image_back          = await uploadToStorage(currentBackFile, `optimized/${safeName}-back.jpg`);
-                record.image_back_original = await uploadToStorage(currentBackFile, `original/${safeName}-back.jpg`);
-            }
+            // Ön/arka/ek görseller — birleşik listeden kolonlara serileştir
+            // (kullanılmayan alanlar açıkça null/[] yazılır)
+            Object.assign(record, await imageList.toRecord());
+
             if (currentThumbFile) {
                 const resized = await ImageUtils.resizeImage(currentThumbFile, 600, 0.82);
                 record.image_thumbnail = await uploadToStorage(resized, `optimized/${safeName}-thumb.jpg`);
@@ -315,16 +299,11 @@
     function resetForm() {
         postcardForm.reset();
         editIdField.value = '';
-        currentFrontFile = null;
-        currentBackFile  = null;
         currentThumbFile = null;
         currentTags = [];
         renderTagChips();
-        previewFront.style.display = 'none';
-        previewBack.style.display  = 'none';
+        imageList.clear();
         previewThumb.style.display = 'none';
-        placeholderFront.style.display = '';
-        placeholderBack.style.display  = '';
         placeholderThumb.style.display = '';
         formTitle.textContent     = 'Yeni Kartpostal Ekle';
         formSubmitBtn.textContent = 'Kartpostal Ekle';
@@ -399,11 +378,8 @@
         currentTags = [...(pc.tags || [])];
         renderTagChips();
 
-        currentFrontFile = null; currentBackFile = null; currentThumbFile = null;
-        const frontSrc = pc.image_front || pc.imageFront || pc.image || '';
-        if (frontSrc) { previewFront.src = frontSrc; previewFront.style.display = 'block'; placeholderFront.style.display = 'none'; }
-        const backSrc = pc.image_back || pc.imageBack || '';
-        if (backSrc) { previewBack.src = backSrc; previewBack.style.display = 'block'; placeholderBack.style.display = 'none'; }
+        currentThumbFile = null;
+        imageList.fromPostcard(pc);
         const thumbSrc = pc.image_thumbnail || '';
         if (thumbSrc) { previewThumb.src = thumbSrc; previewThumb.style.display = 'block'; placeholderThumb.style.display = 'none'; }
         else { previewThumb.style.display = 'none'; placeholderThumb.style.display = ''; }
