@@ -548,6 +548,38 @@
 }
 .stat-row-val { position: relative; z-index: 1; font-weight: 600; color: var(--color-text-muted); margin-left: 0.5rem; }
 
+/* Son ziyaretler tablosu */
+.visits-wrap { overflow-x: auto; margin-top: 0.5rem; }
+.visits-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; white-space: nowrap; }
+.visits-table th {
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+    padding: 0.5rem 0.6rem;
+    border-bottom: 2px solid var(--color-border-light);
+}
+.visits-table td {
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text);
+}
+.visits-table tr:hover td { background: var(--color-border-light); }
+.visit-time { color: var(--color-text-muted); }
+.visit-page { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+.visits-table .visit-bot td { opacity: 0.55; }
+.visit-bot-tag {
+    font-size: 0.62rem;
+    background: #e6e0d6;
+    color: #7a6a4a;
+    border-radius: 8px;
+    padding: 0 0.35rem;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+
 @media (max-width: 768px) {
     .stat-cards { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr; }

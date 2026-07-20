@@ -56,6 +56,7 @@
             });
             if (error) throw error;
             render(data || {});
+            await loadVisits(from, to, botCb ? botCb.checked : true);
             status.style.display = 'none';
             content.style.display = '';
         } catch (e) {
@@ -125,6 +126,63 @@
                  + `<span class="stat-row-key" title="${escapeHtml(String(r.key))}">${escapeHtml(String(r.key))}</span>`
                  + `<span class="stat-row-val">${r.views}</span></div>`;
         }).join('');
+    }
+
+    // ── Son ziyaretler (ham liste) ────────────────────────────────────────
+    const VISITS_LIMIT = 200;
+
+    async function loadVisits(from, to, excludeBots) {
+        const tbody = document.getElementById('visits-tbody');
+        const empty = document.getElementById('visits-empty');
+        const countEl = document.getElementById('visits-count');
+        try {
+            let q = SupabaseClient.from('page_views')
+                .select('created_at,path,page_type,referrer_host,source,country,city,device_type,browser,os,language,is_bot')
+                .gte('created_at', from.toISOString())
+                .lt('created_at', to.toISOString())
+                .order('created_at', { ascending: false })
+                .limit(VISITS_LIMIT);
+            if (excludeBots) q = q.eq('is_bot', false);
+            const { data, error } = await q;
+            if (error) throw error;
+            renderVisits(data || []);
+            if (countEl) countEl.textContent = (data || []).length;
+        } catch (e) {
+            tbody.innerHTML = '';
+            empty.style.display = '';
+            empty.textContent = 'Ziyaretler yüklenemedi: ' + (e.message || e);
+        }
+    }
+
+    var SOURCE_TR = { direct: 'Direkt', search: 'Arama', social: 'Sosyal', referral: 'Yönlendirme', internal: 'İç gezinme', campaign: 'Kampanya' };
+    var DEVICE_TR = { mobile: 'Mobil', tablet: 'Tablet', desktop: 'Masaüstü' };
+
+    function renderVisits(rows) {
+        const tbody = document.getElementById('visits-tbody');
+        const empty = document.getElementById('visits-empty');
+        if (!rows.length) { tbody.innerHTML = ''; empty.style.display = ''; empty.textContent = 'Bu aralıkta ziyaret yok.'; return; }
+        empty.style.display = 'none';
+        tbody.innerHTML = rows.map(function (r) {
+            var loc = [r.city, r.country].filter(Boolean).join(', ') || '—';
+            var src = r.referrer_host || SOURCE_TR[r.source] || r.source || '—';
+            var dev = DEVICE_TR[r.device_type] || r.device_type || '—';
+            var brw = [r.browser, r.os].filter(Boolean).join(' · ') || '—';
+            return '<tr' + (r.is_bot ? ' class="visit-bot"' : '') + '>'
+                + '<td class="visit-time">' + escapeHtml(fmtTime(r.created_at)) + (r.is_bot ? ' <span class="visit-bot-tag">bot</span>' : '') + '</td>'
+                + '<td class="visit-page" title="' + escapeHtml(r.path) + '">' + escapeHtml(r.path) + '</td>'
+                + '<td title="' + escapeHtml(src) + '">' + escapeHtml(src) + '</td>'
+                + '<td>' + escapeHtml(loc) + '</td>'
+                + '<td>' + escapeHtml(dev) + '</td>'
+                + '<td>' + escapeHtml(brw) + '</td>'
+                + '<td>' + escapeHtml(r.language || '—') + '</td>'
+                + '</tr>';
+        }).join('');
+    }
+
+    function fmtTime(iso) {
+        var d = new Date(iso);
+        if (isNaN(d)) return iso || '';
+        return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     }
 
     // ── Yardımcılar ───────────────────────────────────────────────────────
