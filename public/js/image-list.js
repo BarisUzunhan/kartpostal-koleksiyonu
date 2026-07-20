@@ -34,6 +34,8 @@
         .img-list-file { display:none; }
         .img-list .img-move-up[disabled], .img-list .img-move-down[disabled] { opacity:0.4; cursor:default; }
         .img-list .img-remove { color:#b23b3b; border-color:#e6b8b8; }
+        .img-list .img-thumb-toggle { color:#9a7a2a; border-color:#e6d7a8; }
+        .img-list .img-thumb-toggle.active { background:#f6e7b8; border-color:#d9c377; color:#7a5f18; font-weight:600; }
         `;
         document.head.appendChild(style);
     }
@@ -81,7 +83,21 @@
             extras.forEach((url, i) => {
                 if (url) slots.push({ optimizedUrl: url, originalUrl: extrasOrig[i] || url, file: null });
             });
+            // Thumbnail görsellerden biriyse ilgili slotu ★ ile işaretle
+            const thumb = pc.image_thumbnail || '';
+            if (thumb) {
+                const m = slots.find(s => s.optimizedUrl === thumb);
+                if (m) m.isThumb = true;
+            }
             this.slots = slots;
+            this.render();
+        }
+
+        // Slotlardan birini küçük resim (thumbnail) yap; tekrar tıklanırsa "yok"
+        setThumb(i) {
+            const wasThumb = this.slots[i] && this.slots[i].isThumb;
+            this.slots.forEach(s => { s.isThumb = false; });
+            if (this.slots[i]) this.slots[i].isThumb = !wasThumb;
             this.render();
         }
 
@@ -105,15 +121,21 @@
             const idBase = this.idProvider();
             const stamp  = Date.now();
             const resolved = [];
+            let thumbUrl = null;   // ★ işaretli slotun çözümlenmiş optimize URL'i
             for (let i = 0; i < this.slots.length; i++) {
                 const s = this.slots[i];
+                let entry = null;
                 if (s.file) {
                     const { optimizedUrl, originalUrl } = await this._upload(s.file, `${idBase}-img-${i}-${stamp}.jpg`);
-                    resolved.push({ optimizedUrl, originalUrl });
+                    entry = { optimizedUrl, originalUrl };
                 } else if (s.optimizedUrl && s.optimizedUrl.trim()) {
-                    resolved.push({ optimizedUrl: s.optimizedUrl.trim(), originalUrl: (s.originalUrl || s.optimizedUrl).trim() });
+                    entry = { optimizedUrl: s.optimizedUrl.trim(), originalUrl: (s.originalUrl || s.optimizedUrl).trim() };
                 }
                 // içeriksiz slot atlanır
+                if (entry) {
+                    resolved.push(entry);
+                    if (s.isThumb) thumbUrl = entry.optimizedUrl;
+                }
             }
 
             const rec = {};
@@ -128,6 +150,10 @@
             const extras = resolved.slice(2);
             rec.extra_images          = extras.map(r => r.optimizedUrl);
             rec.extra_images_original = extras.map(r => r.originalUrl);
+
+            // Liste seçimi öncelikli; yalnızca bir slot ★ ise thumbnail'i yaz.
+            // Seçim yoksa anahtar hiç eklenmez → sayfanın özel-thumbnail mantığı çalışır.
+            if (thumbUrl) rec.image_thumbnail = thumbUrl;
             return rec;
         }
 
@@ -168,6 +194,7 @@
                         <div class="img-list-actions">
                             <input type="file" class="img-list-file" accept="image/*" id="${fileId}">
                             <label for="${fileId}" class="btn btn-secondary btn-sm">Dosya Yükle</label>
+                            <button type="button" class="btn btn-sm img-thumb-toggle${slot.isThumb ? ' active' : ''}" title="Küçük resim (thumbnail) olarak kullan">${slot.isThumb ? '★ Küçük resim' : '☆ Küçük resim'}</button>
                             <button type="button" class="btn btn-sm img-remove">Kaldır</button>
                         </div>
                     </div>
@@ -200,6 +227,7 @@
 
                 wrap.querySelector('.img-move-up').addEventListener('click', () => this.move(i, -1));
                 wrap.querySelector('.img-move-down').addEventListener('click', () => this.move(i, +1));
+                wrap.querySelector('.img-thumb-toggle').addEventListener('click', () => this.setThumb(i));
                 wrap.querySelector('.img-remove').addEventListener('click', () => this.removeAt(i));
 
                 this.container.appendChild(wrap);

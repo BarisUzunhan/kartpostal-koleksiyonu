@@ -260,10 +260,13 @@
         // Tüm görseller (ön + arka + ek) birleşik, sıralanabilir liste olarak
         imageList.fromPostcard(pc);
 
-        // Thumbnail — boşsa ön yüz kullanılıyor, alanı boş bırakıyoruz (placeholder yok)
+        // Özel thumbnail alanı — thumbnail görsellerden biriyse listede ★ ile
+        // gösterildiği için buraya doldurmuyoruz (aynı şeyi iki yerde göstermeyelim).
         const imgThumb = document.getElementById('edit-img-thumb');
         const thumbUrl = document.getElementById('edit-thumb-url');
-        const tSrc = pc.image_thumbnail || '';
+        const listImages = [pc.image_front || pc.imageFront, pc.image_back || pc.imageBack, ...(pc.extra_images || [])];
+        const thumbFromList = pc.image_thumbnail && listImages.includes(pc.image_thumbnail);
+        const tSrc = (pc.image_thumbnail && !thumbFromList) ? pc.image_thumbnail : '';
         imgThumb.src = tSrc; imgThumb.style.display = tSrc ? '' : 'none';
         thumbUrl.value = tSrc;
 
@@ -370,20 +373,25 @@
             };
 
             // Ön/arka/ek görseller — birleşik listeden kolonlara serileştir
-            // (kullanılmayan alanlar açıkça null/[] yazılır)
-            Object.assign(record, await imageList.toRecord());
+            // (kullanılmayan alanlar açıkça null/[] yazılır). Listede ★ ile bir
+            // görsel seçilmişse record.image_thumbnail'i de o belirler (öncelikli).
+            const imgRec = await imageList.toRecord();
+            Object.assign(record, imgRec);
 
-            // Thumbnail — boş bırakılırsa temizlenir (ön yüze döner), URL girilirse
-            // olduğu gibi kullanılır, dosya seçilirse önce küçültülüp öyle yüklenir
-            const thumbUrlVal = document.getElementById('edit-thumb-url').value.trim();
-            if (thumbFile) {
-                const resized = await ImageUtils.resizeImage(thumbFile, 600, 0.82);
-                const path = `optimized/${editingId}-thumb-${Date.now()}.jpg`;
-                const { error } = await SupabaseClient.storage.from('postcards').upload(path, resized, { upsert: true, contentType: 'image/jpeg' });
-                if (error) throw error;
-                record.image_thumbnail = SupabaseClient.storage.from('postcards').getPublicUrl(path).data.publicUrl;
-            } else if (!thumbUrlVal.startsWith('(')) {
-                record.image_thumbnail = thumbUrlVal || null;
+            // Özel thumbnail — yalnızca listeden ★ seçim YOKSA çalışır. Boş bırakılırsa
+            // temizlenir (ön yüze döner), URL girilirse olduğu gibi kullanılır, dosya
+            // seçilirse önce küçültülüp öyle yüklenir.
+            if (!('image_thumbnail' in imgRec)) {
+                const thumbUrlVal = document.getElementById('edit-thumb-url').value.trim();
+                if (thumbFile) {
+                    const resized = await ImageUtils.resizeImage(thumbFile, 600, 0.82);
+                    const path = `optimized/${editingId}-thumb-${Date.now()}.jpg`;
+                    const { error } = await SupabaseClient.storage.from('postcards').upload(path, resized, { upsert: true, contentType: 'image/jpeg' });
+                    if (error) throw error;
+                    record.image_thumbnail = SupabaseClient.storage.from('postcards').getPublicUrl(path).data.publicUrl;
+                } else if (!thumbUrlVal.startsWith('(')) {
+                    record.image_thumbnail = thumbUrlVal || null;
+                }
             }
 
             const positionInput = document.querySelector('input[name="extra-images-position"]:checked');

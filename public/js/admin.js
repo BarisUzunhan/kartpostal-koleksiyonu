@@ -272,10 +272,13 @@
             const safeName = `${Date.now()}-${city.toLowerCase().replace(/[^a-z0-9]/gi, '-')}`;
 
             // Ön/arka/ek görseller — birleşik listeden kolonlara serileştir
-            // (kullanılmayan alanlar açıkça null/[] yazılır)
-            Object.assign(record, await imageList.toRecord());
+            // (kullanılmayan alanlar açıkça null/[] yazılır). Listede ★ ile bir
+            // görsel seçilmişse record.image_thumbnail'i de o belirler (öncelikli).
+            const imgRec = await imageList.toRecord();
+            Object.assign(record, imgRec);
 
-            if (currentThumbFile) {
+            // Özel thumbnail — yalnızca listeden ★ seçim YOKSA çalışır
+            if (!('image_thumbnail' in imgRec) && currentThumbFile) {
                 const resized = await ImageUtils.resizeImage(currentThumbFile, 600, 0.82);
                 record.image_thumbnail = await uploadToStorage(resized, `optimized/${safeName}-thumb.jpg`);
             }
@@ -380,7 +383,11 @@
 
         currentThumbFile = null;
         imageList.fromPostcard(pc);
-        const thumbSrc = pc.image_thumbnail || '';
+        // Özel thumbnail önizlemesi — thumbnail görsellerden biriyse listede ★ ile
+        // gösterildiği için burada gösterme (aynı şeyi iki yerde göstermeyelim).
+        const listImages = [pc.image_front || pc.imageFront, pc.image_back || pc.imageBack, ...(pc.extra_images || [])];
+        const thumbFromList = pc.image_thumbnail && listImages.includes(pc.image_thumbnail);
+        const thumbSrc = (pc.image_thumbnail && !thumbFromList) ? pc.image_thumbnail : '';
         if (thumbSrc) { previewThumb.src = thumbSrc; previewThumb.style.display = 'block'; placeholderThumb.style.display = 'none'; }
         else { previewThumb.style.display = 'none'; placeholderThumb.style.display = ''; }
 
