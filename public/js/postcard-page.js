@@ -105,6 +105,12 @@
     // Şehir + ülke aynı satırda
     html += `<h2 class="detail-city">${escapeHtml(postcard.city)}<span class="detail-country-inline">, ${escapeHtml(I18n.translateCountry(postcard.country))}</span></h2>`;
 
+    // Paylaş butonu
+    html += `<button id="detail-share-btn" type="button" class="share-btn" style="margin-bottom:0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>${escapeHtml(I18n.t('share') || 'Paylaş')}</span>
+             </button>`;
+
     // Açıklamalar
     if (desc.text)  html += `<p class="detail-description">${escapeHtml(desc.text)}</p>`;
     if (desc.text2) html += `<p class="detail-description detail-description-secondary">${escapeHtml(desc.text2)}</p>`;
@@ -142,6 +148,12 @@
     }
 
     container.innerHTML = html;
+
+    // ── Paylaş butonu ───────────────────────────────────────────────────────
+    const shareBtnEl = document.getElementById('detail-share-btn');
+    if (shareBtnEl && typeof Share !== 'undefined') {
+        shareBtnEl.addEventListener('click', () => Share.sharePostcard(postcard));
+    }
 
     // ── Zoom olayları bağla ─────────────────────────────────────────────────
     const imgFrontEl = document.getElementById('detail-img-front');

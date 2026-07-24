@@ -1,0 +1,23 @@
+{
+  // Cloudflare Workers — statik site (public/) + kartpostal sayfalarına
+  // Open Graph meta enjeksiyonu yapan Worker.
+  // NOT: "name" mevcut Cloudflare projesinin adıyla eşleşmeli
+  // (workers.dev alt alan adı: baskatopraklarinrenkleri).
+  "name": "baskatopraklarinrenkleri",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-06-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    // Site linkleri her yerde .html kullanıyor; otomatik .html→uzantısız yönlendirmeyi
+    // kapat ki /postcard.html doğrudan servis edilsin (aksi halde 307 redirect olur).
+    "html_handling": "none",
+    // Yalnız postcard.html Worker'dan geçsin; gerisi doğrudan static servis edilir.
+    "run_worker_first": ["/postcard.html"]
+  },
+  "vars": {
+    // Anon (publishable) key herkese açıktır — public/js/supabaseClient.js'te de var.
+    "SUPABASE_URL": "https://eyapkqmmagzstdoxprnp.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_RUi-Qk_i4Cy0Q22JifYLnA_4Hx_PzvO"
+  }
+}

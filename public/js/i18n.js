@@ -65,7 +65,10 @@ const I18n = (function () {
             otherImages: 'Diğer görseller',
             clickToZoom: 'Büyütmek için tıklayın',
             prevPostcard: '‹ Önceki Kartpostal',
-            nextPostcard: 'Sonraki Kartpostal ›'
+            nextPostcard: 'Sonraki Kartpostal ›',
+            share: 'Paylaş',
+            copyLink: 'Linki kopyala',
+            linkCopied: 'Link kopyalandı'
         },
         en: {
             siteTitle: 'Colors of Other Lands',
@@ -124,7 +127,10 @@ const I18n = (function () {
             otherImages: 'Other images',
             clickToZoom: 'Click to zoom',
             prevPostcard: '‹ Previous Card',
-            nextPostcard: 'Next Card ›'
+            nextPostcard: 'Next Card ›',
+            share: 'Share',
+            copyLink: 'Copy link',
+            linkCopied: 'Link copied'
         },
         zh: {
             siteTitle: '\u5f02\u57df\u4e4b\u8272',
@@ -183,7 +189,10 @@ const I18n = (function () {
             otherImages: '\u5176\u4ed6\u56fe\u7247',
             clickToZoom: '\u70b9\u51fb\u653e\u5927',
             prevPostcard: '\u2039 \u4e0a\u4e00\u5f20',
-            nextPostcard: '\u4e0b\u4e00\u5f20 \u203a'
+            nextPostcard: '\u4e0b\u4e00\u5f20 \u203a',
+            share: '\u5206\u4eab',
+            copyLink: '\u590d\u5236\u94fe\u63a5',
+            linkCopied: '\u94fe\u63a5\u5df2\u590d\u5236'
         }
     };
 

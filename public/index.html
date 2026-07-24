@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Baska Topraklarin Renkleri</title>
+    <meta name="description" content="Başka Toprakların Renkleri — dünyanın dört bir yanından kartpostal koleksiyonu.">
+    <!-- Open Graph / sosyal paylaşım (site geneli varsayılan) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Başka Toprakların Renkleri">
+    <meta property="og:title" content="Başka Toprakların Renkleri">
+    <meta property="og:description" content="Dünyanın dört bir yanından kartpostal koleksiyonu.">
+    <meta property="og:image" content="images/logo.png">
+    <meta name="twitter:card" content="summary">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -110,6 +118,10 @@
                     <p id="modal-description" class="modal-description"></p>
                     <p id="modal-description-2" class="modal-description modal-description-secondary" style="display:none;"></p>
                     <p id="modal-translation-note" class="translation-note" style="display:none;"></p>
+                    <button id="modal-share-btn" type="button" class="share-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        <span data-i18n="share">Paylaş</span>
+                    </button>
                     <a id="modal-extra-btn" href="#" class="modal-extra-btn" style="display:none;">
                         🖼 <span data-i18n="hasMoreImages">Bu sayfa başka görseller de içermektedir</span>
                     </a>
@@ -144,6 +156,7 @@
     <script src="js/data.js"></script>
     <script src="js/map-base.js"></script>
     <script src="js/zoom.js"></script>
+    <script src="js/share.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/gallery.js"></script>
     <script src="js/map.js"></script>

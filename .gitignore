@@ -19,5 +19,8 @@ EskiSiteDatalari/
 # Playwright test artifacts
 .playwright-mcp/
 
+# Cloudflare Wrangler yerel önbellek/durum
+.wrangler/
+
 # Diğer
 ISBN.txt

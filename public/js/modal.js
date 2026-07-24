@@ -11,6 +11,7 @@ const Modal = (function () {
     const imgFront   = document.getElementById('modal-img-front');
     const imgBack    = document.getElementById('modal-img-back');
     const extraBtn   = document.getElementById('modal-extra-btn');
+    const shareBtn   = document.getElementById('modal-share-btn');
     const cityEl     = document.getElementById('modal-city');
     const countryEl  = document.getElementById('modal-country');
     const descEl     = document.getElementById('modal-description');
@@ -46,6 +47,14 @@ const Modal = (function () {
         imgBack.addEventListener('click', () => {
             if (zoomImages.length > 1) ImageZoom.open(zoomImages, 1);
         });
+
+        // Paylaş
+        if (shareBtn) {
+            shareBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentPostcard) Share.sharePostcard(currentPostcard);
+            });
+        }
     }
 
     function open(postcard, list) {

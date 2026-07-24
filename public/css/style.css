@@ -479,6 +479,87 @@ body {
     border-color: var(--color-text-muted);
 }
 
+/* ---- Paylaş butonu + menü ---- */
+.share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-surface);
+    background: var(--color-accent, #7a9a8a);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.share-btn:hover { opacity: 0.85; }
+.share-btn svg { width: 15px; height: 15px; }
+
+.share-menu-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 12000;
+    padding: 1rem;
+}
+.share-menu {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 220px;
+    max-width: 90vw;
+}
+.share-menu a,
+.share-menu .share-copy {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--color-text);
+    text-decoration: none;
+    background: var(--color-bg-alt);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+.share-menu a:hover,
+.share-menu .share-copy:hover {
+    background: var(--color-border-light);
+}
+
+.share-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 2rem;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    z-index: 12100;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+}
+.share-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* ---- Pagination ---- */
 .pagination {
     display: flex;
