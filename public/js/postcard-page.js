@@ -1,5 +1,5 @@
 /* ========================================
-   Detay Sayfası — Yan Yana Görsel, Zoom, Ekstra Görseller,
+   Detay Sayfası — Alt Alta Görsel, Zoom, Ekstra Görseller,
    Mini Harita (tembel), Önceki/Sonraki, Benzer Kartpostallar
    (Supabase async)
    ======================================== */
@@ -50,10 +50,10 @@
     let extrasHtml = '';
     if (extras.length > 0) {
         extrasHtml += `<h3 class="detail-section-title" id="other-images-title">${I18n.t('otherImages') || 'Diğer görseller'}</h3>`;
-        extrasHtml += `<div class="detail-extra-grid" id="detail-extra-grid">`;
+        extrasHtml += `<div class="detail-extra-stack" id="detail-extra-grid">`;
         for (let i = 0; i < extras.length; i++) {
             if (!extras[i]) continue;
-            extrasHtml += `<img src="${escapeHtml(extras[i])}" loading="lazy"
+            extrasHtml += `<img class="detail-image" src="${escapeHtml(extras[i])}" loading="lazy"
                           alt="${escapeHtml(postcard.city)} - görsel ${i + 2}"
                           title="${I18n.t('clickToZoom') || 'Büyütmek için tıklayın'}"
                           data-orig="${escapeHtml(extrasOrig[i] || extras[i])}"
@@ -64,7 +64,7 @@
 
     let html = `<div class="detail-card fade-in">`;
 
-    // ── Görseller yan yana ──────────────────────────────────────────────────
+    // ── Görseller alt alta ──────────────────────────────────────────────────
     html += `<div class="detail-images" id="detail-images">`;
     html += `<img class="detail-image" id="detail-img-front"
                   src="${escapeHtml(frontSrc)}" alt="${escapeHtml(postcard.city)}"

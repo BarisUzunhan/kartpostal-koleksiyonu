@@ -7,6 +7,7 @@ const Modal = (function () {
     const closeBtn   = document.getElementById('modal-close');
     const prevBtn    = document.getElementById('modal-prev');
     const nextBtn    = document.getElementById('modal-next');
+    const imagesWrap = document.getElementById('modal-images');
     const imgFront   = document.getElementById('modal-img-front');
     const imgBack    = document.getElementById('modal-img-back');
     const extraBtn   = document.getElementById('modal-extra-btn');
@@ -89,17 +90,38 @@ const Modal = (function () {
         zoomImages = [postcard.image_front_original || frontSrc];
         if (backSrc) zoomImages.push(postcard.image_back_original || backSrc);
 
-        // Ekstra görseller butonu
-        const extras = postcard.extra_images;
-        if (extraBtn) {
-            if (extras && extras.length > 0) {
-                extraBtn.style.display = '';
-                extraBtn.href = `postcard.html?id=${encodeURIComponent(postcard.id)}`;
-                const span = extraBtn.querySelector('[data-i18n]');
-                if (span) span.textContent = I18n.t('hasMoreImages') || 'Bu sayfa başka görseller de içermektedir';
-            } else {
-                extraBtn.style.display = 'none';
+        // Önceki karttan kalan satır içi ekstra görselleri temizle
+        imagesWrap.querySelectorAll('.modal-extra-img').forEach(el => el.remove());
+
+        // Ekstra görseller
+        const extras     = Array.isArray(postcard.extra_images)          ? postcard.extra_images          : [];
+        const extrasOrig = Array.isArray(postcard.extra_images_original) ? postcard.extra_images_original : [];
+        const pos        = postcard.extra_images_position || 'after_description';
+        const hasExtras  = extras.length > 0;
+
+        // "Ön/arka yüzün hemen altında" işaretliyse ekstraları modalda satır içi göster
+        if (hasExtras && pos === 'after_images') {
+            for (let i = 0; i < extras.length; i++) {
+                if (!extras[i]) continue;
+                const zoomIndex = zoomImages.length;
+                zoomImages.push(extrasOrig[i] || extras[i]);
+
+                const img = document.createElement('img');
+                img.className = 'modal-extra-img';
+                img.src = extras[i];
+                img.alt = (postcard.city || '') + ' - görsel ' + (i + 2);
+                img.addEventListener('click', () => ImageZoom.open(zoomImages, zoomIndex));
+                imagesWrap.appendChild(img);
             }
+            if (extraBtn) extraBtn.style.display = 'none';
+        } else if (hasExtras && extraBtn) {
+            // Aksi halde: detay sayfasına giden link butonu
+            extraBtn.style.display = '';
+            extraBtn.href = `postcard.html?id=${encodeURIComponent(postcard.id)}`;
+            const span = extraBtn.querySelector('[data-i18n]');
+            if (span) span.textContent = I18n.t('hasMoreImages') || 'Bu sayfa başka görseller de içermektedir';
+        } else if (extraBtn) {
+            extraBtn.style.display = 'none';
         }
 
         // Şehir + ülke aynı satırda

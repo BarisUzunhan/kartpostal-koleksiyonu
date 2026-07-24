@@ -53,47 +53,27 @@
             min-height: 200px;
         }
 
-        .detail-images .detail-image {
+        .detail-images .detail-image,
+        .detail-extra-stack .detail-image {
             width: 100%;
-            height: 420px;
-            max-height: 50vh;
-            object-fit: contain;
+            height: auto;
             background: var(--color-bg-alt);
             display: block;
             cursor: zoom-in;
             transition: opacity 0.15s;
         }
 
-        .detail-images .detail-image:hover {
+        .detail-images .detail-image:hover,
+        .detail-extra-stack .detail-image:hover {
             opacity: 0.92;
         }
 
-        /* Ekstra görseller grid */
-        .detail-extra-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        /* Ekstra görseller — ön/arka ile aynı: alt alta, tam genişlik, kırpmasız */
+        .detail-extra-stack {
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
             margin-top: 0.75rem;
-        }
-
-        .detail-extra-grid img {
-            width: 100%;
-            aspect-ratio: 4/3;
-            object-fit: cover;
-            border-radius: var(--radius-sm);
-            cursor: zoom-in;
-            transition: opacity 0.15s;
-        }
-
-        .detail-extra-grid img:hover {
-            opacity: 0.85;
-        }
-
-        @media (max-width: 640px) {
-            .detail-images .detail-image {
-                height: 300px;
-                max-height: 45vh;
-            }
         }
 
         .detail-info {
